@@ -178,7 +178,10 @@ async def get_prompt(prompt_id: int):
     )
     await database.execute(update_query)
     
-    return dict(result)
+    # Fetch the updated prompt with new view count
+    updated_result = await database.fetch_one(query)  # ⬅️ GET FRESH DATA
+    
+    return dict(updated_result)  # ⬅️ RETURN NEW DATA
 
 @app.get("/api/categories")
 async def get_categories():

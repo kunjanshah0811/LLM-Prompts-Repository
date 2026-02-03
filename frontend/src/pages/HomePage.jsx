@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { usePrompts, useCategories } from '../hooks/usePrompts';
+import { promptsAPI } from '../utils/api';
 import PromptCard from '../components/PromptCard';
 import PromptModal from '../components/PromptModal';
 import SearchBar from '../components/SearchBar';
@@ -9,8 +10,7 @@ const HomePage = () => {
   const [selectedPrompt, setSelectedPrompt] = useState(null);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
   
-  const { prompts, loading, error } = usePrompts(filters);
-  const { categories } = useCategories();
+  const { prompts, loading, error, setPrompts } = usePrompts(filters);  const { categories } = useCategories();
 
   const handleSearch = (searchTerm) => {
     setFilters(prev => ({
@@ -34,25 +34,27 @@ const HomePage = () => {
   };
 
 const openPromptModal = async (prompt) => {
-  // Fetch full prompt (this increments views!)
   try {
-    const fullPrompt = await promptsAPI.getPrompt(prompt.id);
-    setSelectedPrompt(fullPrompt);
+    // Call API to get full prompt details (this increments view count)
+    const updatedPrompt = await promptsAPI.getPrompt(prompt.id);
     
-    // Update the card with new view count
+    // Update the prompt in the list with new view count
     setPrompts(prevPrompts => 
-      prevPrompts.map(p => 
-        p.id === fullPrompt.id ? fullPrompt : p
-      )
+      prevPrompts.map(p => p.id === prompt.id ? updatedPrompt : p)
     );
+    
+    // Show the updated prompt in modal
+    setSelectedPrompt(updatedPrompt);
   } catch (error) {
-    console.error('Error fetching prompt details:', error);
+    console.error('Error loading prompt:', error);
+    // Fallback to showing the prompt anyway
     setSelectedPrompt(prompt);
   }
 };
 
   const closePromptModal = () => {
     setSelectedPrompt(null);
+
   };
 
   return (
@@ -64,7 +66,7 @@ const openPromptModal = async (prompt) => {
             Discover LLM Prompts
           </h2>
           <p className="text-gray-600 text-lg">
-            Browse and copy prompts designed for social science research
+            Add and Browse prompts designed for Social Science Research
           </p>
         </div>
 
