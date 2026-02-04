@@ -99,7 +99,7 @@ async def root():
 
 @app.post("/api/prompts", response_model=PromptResponse)
 async def create_prompt(prompt: PromptCreate):
-    
+
     """Create a new prompt"""
     query = prompts.insert().values(
         title=prompt.title,
@@ -196,7 +196,7 @@ async def get_categories():
 async def get_stats():
     """Get statistics about prompts"""
     # Total count
-    count_query = sqlalchemy.select([sqlalchemy.func.count()]).select_from(prompts)
+    count_query = sqlalchemy.select(sqlalchemy.func.count()).select_from(prompts)
     total = await database.fetch_val(count_query)
     
     # Count by category
@@ -218,7 +218,7 @@ async def get_stats():
 # Seed database with social science research prompts
 async def seed_database():
     """Populate database with example prompts if empty"""
-    count_query = sqlalchemy.select([sqlalchemy.func.count()]).select_from(prompts)
+    count_query = sqlalchemy.select(sqlalchemy.func.count()).select_from(prompts)
     count = await database.fetch_val(count_query)
     
     if count > 0:
