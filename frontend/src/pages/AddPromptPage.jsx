@@ -20,7 +20,21 @@ const AddPromptPage = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [categoryCounts, setCategoryCounts] = useState({});
-  
+  const [existingPrompts, setExistingPrompts] = useState([]);
+
+// Fetch existing prompts for duplicate checking
+useEffect(() => {
+  const loadPrompts = async () => {
+    try {
+      const data = await promptsAPI.getAll({ limit: 1000 });
+      setExistingPrompts(data);
+    } catch (err) {
+      console.error('Failed to load prompts:', err);
+    }
+  };
+  loadPrompts();
+}, []);
+
   // Fetch category counts
   useEffect(() => {
     const fetchCategoryCounts = async () => {
@@ -44,6 +58,19 @@ const AddPromptPage = () => {
 
   const handleSubmit = async (e) => {
   e.preventDefault();
+
+  // Check for duplicate (title + category, case-insensitive)
+  const isDuplicate = existingPrompts.some(p => 
+    p.title.trim().toLowerCase() === formData.title.trim().toLowerCase() && 
+    p.category.toLowerCase() === formData.category.toLowerCase()
+  );
+
+  if (isDuplicate) {
+    setError('A prompt with this title and category already exists. Please use a different title or category.');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    return;
+  }
+
   setSubmitting(true);
   setError('');
 

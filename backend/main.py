@@ -99,6 +99,7 @@ async def root():
 
 @app.post("/api/prompts", response_model=PromptResponse)
 async def create_prompt(prompt: PromptCreate):
+    
     """Create a new prompt"""
     query = prompts.insert().values(
         title=prompt.title,
