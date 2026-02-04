@@ -36,6 +36,25 @@ const PromptCard = ({ prompt, onClick }) => {
 
   const { main: mainCategory, sub: subCategory } = parseCategory(prompt.category);
 
+  // Extract only the prompt part for preview (remove example section)
+  const getPromptOnly = (text) => {
+    if (!text) return '';
+    if (text.includes('---EXAMPLE---')) {
+      return text.split('---EXAMPLE---')[0].trim();
+    }
+    // Fallback: try to remove common example markers
+    const exampleMarkers = ['Example:', 'Sample Output:', 'Example Output:'];
+    for (const marker of exampleMarkers) {
+      const index = text.indexOf('\n' + marker);
+      if (index !== -1) {
+        return text.substring(0, index).trim();
+      }
+    }
+    return text;
+  };
+
+  const promptOnlyText = getPromptOnly(prompt.prompt_text);
+
   return (
     <div 
       onClick={onClick}
@@ -74,7 +93,7 @@ const PromptCard = ({ prompt, onClick }) => {
 
         {/* Prompt Preview */}
         <p className="text-gray-600 mb-4 text-sm leading-relaxed">
-          {truncateText(prompt.prompt_text)}
+          {truncateText(promptOnlyText)}
         </p>
 
         {/* Tags */}

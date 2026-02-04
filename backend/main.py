@@ -12,7 +12,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database configuration
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://user:password@localhost:5432/promptdb")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://promptuser:promptpass@localhost:5432/promptdb")
 
 database = databases.Database(DATABASE_URL)
 metadata = MetaData()
@@ -214,7 +214,7 @@ async def get_stats():
         "categories": categories_dict
     }
 
-# Seed database with comprehensive social science research prompts
+# Seed database with social science research prompts
 async def seed_database():
     """Populate database with example prompts if empty"""
     count_query = sqlalchemy.select([sqlalchemy.func.count()]).select_from(prompts)
@@ -225,1235 +225,1762 @@ async def seed_database():
     
     example_prompts = [
         # ============================================
-        # 2. DATA COLLECTION
+        # 1. DATA COLLECTION
         # ============================================
         
-        # Data Extraction & APIs
+        # Data Extraction & APIs (3 prompts)
         {
-            "title": "API Data Extraction - Social Media Posts",
-            "prompt_text": """I need to extract data from {api_name} API for social science research. 
+            "title": "Twitter API Data Collection",
+            "prompt_text": """Extract tweets about {topic} from the past {timeframe}.
 
-Research Goal: {research_goal}
-Data Needed: {data_fields}
-Time Period: {time_period}
-Sample Size: {sample_size}
+Requirements:
+- Include: tweet text, author, timestamp, engagement metrics
+- Filter: {language}, exclude retweets
+- Sample size: {n} tweets
 
-Please provide:
-1. API endpoint structure needed
-2. Required parameters and authentication
-3. Sample API request code (Python)
-4. Data parsing strategy
-5. Ethical considerations for this data collection
-
-Example Output Format:
-```python
-import requests
-
-# Your code here
-```""",
-            "category": "Data Collection > Data Extraction & APIs",
-            "tags": ["api", "data-extraction", "web-scraping", "python"],
-            "source": "Custom"
-        },
-        {
-            "title": "Web Scraping for Research Data",
-            "prompt_text": """I need to scrape publicly available data from {website_url} for academic research.
-
-Purpose: {research_purpose}
-Data to Extract: {data_elements}
-Frequency: {collection_frequency}
-
-Provide:
-1. Python scraping script using BeautifulSoup/Scrapy
-2. Data storage format (CSV/JSON)
-3. Error handling strategy
-4. Rate limiting to respect server
-5. Legal and ethical compliance check
-
-Include comments explaining each step for research reproducibility.
+Provide the data in CSV format with these columns: tweet_id, text, author, likes, retweets, timestamp.
 
 ---EXAMPLE---
 
-Sample Expected Output:
-```python
-# Well-commented scraping code
-```""",
+Topic: climate change
+Timeframe: 7 days
+Language: English
+N: 100
+
+Output (CSV format):
+tweet_id,text,author,likes,retweets,timestamp
+1234567890,"New climate report shows...",@scientist_jane,245,89,2024-02-01 14:23:00
+1234567891,"Government announces climate policy...",@news_source,1032,456,2024-02-01 15:45:00
+...(98 more rows)""",
             "category": "Data Collection > Data Extraction & APIs",
-            "tags": ["web-scraping", "beautifulsoup", "data-collection", "ethics"],
+            "tags": ["twitter", "api", "social-media", "data-collection"],
             "source": "Custom"
         },
         {
-            "title": "Survey Data Export & API Integration",
-            "prompt_text": """I have survey responses in {platform_name} (Qualtrics/Google Forms/SurveyMonkey) and need to extract them via API.
+            "title": "Reddit Comments Scraper",
+            "prompt_text": """Extract top comments from r/{subreddit} posts about {topic}.
 
-Survey Details:
-- Response count: {n_responses}
-- Question types: {question_types}
-- Export format needed: {format}
+Filters:
+- Post score: minimum {min_score} upvotes
+- Comment depth: top-level only
+- Time period: {timeframe}
 
-Generate:
-1. API authentication setup
-2. Data extraction script
-3. Data cleaning pipeline
-4. Automated export schedule
-5. Backup strategy
+Return: post_title, comment_text, score, author, timestamp.
 
-Provide complete working code with error handling.""",
+---EXAMPLE---
+
+Subreddit: AskSocialScience
+Topic: research methods
+Min_score: 50
+Timeframe: past month
+
+Output:
+Post: "What's the best way to analyze interview data?"
+├─ Comment 1: "I recommend thematic analysis. Start by reading all transcripts..." (Score: 127, Author: researcher_23)
+├─ Comment 2: "Grounded theory works well for exploratory studies..." (Score: 89, Author: prof_methods)
+├─ Comment 3: "Consider using NVivo or Atlas.ti for coding..." (Score: 64, Author: qual_expert)""",
             "category": "Data Collection > Data Extraction & APIs",
-            "tags": ["survey", "api", "qualtrics", "automation"],
+            "tags": ["reddit", "web-scraping", "comments", "social-media"],
+            "source": "Custom"
+        },
+        {
+            "title": "Survey API Data Export",
+            "prompt_text": """Export survey responses from {platform} for survey ID: {survey_id}.
+
+Include:
+- All responses (complete and partial)
+- Response metadata (start time, completion time, IP location)
+- Custom variables
+
+Format: JSON with nested structure for matrix questions.
+
+---EXAMPLE---
+
+Platform: Qualtrics
+Survey_ID: SV_abc123xyz
+
+Output (JSON):
+{
+  "responses": [
+    {
+      "response_id": "R_xyz789",
+      "status": "complete",
+      "start_date": "2024-02-01 10:30:00",
+      "end_date": "2024-02-01 10:45:00",
+      "answers": {
+        "Q1_age": 28,
+        "Q2_gender": "Female",
+        "Q3_satisfaction": 4
+      }
+    }
+  ],
+  "total_responses": 456
+}""",
+            "category": "Data Collection > Data Extraction & APIs",
+            "tags": ["survey", "qualtrics", "api", "export"],
             "source": "Custom"
         },
         
-        # Interview Protocols
+        # Interview Protocols (3 prompts)
         {
-            "title": "Mock Interviewer - Practice Session",
-            "prompt_text": """Act as a mock interviewer for the following position: {job_title} at {organization_type}.
+            "title": "Mock Job Interview Practice",
+            "prompt_text": """Act as a mock interviewer for a {job_title} position at {organization}.
 
-Interview Type: {interview_type} (behavioral/technical/case study)
-My Background: {candidate_background}
-Position Level: {position_level}
+Conduct a {duration}-minute {interview_type} interview. Ask relevant questions, wait for my responses, then provide constructive feedback.
 
-Please:
-1. Ask me {number} interview questions appropriate for this role
-2. Wait for my response after each question
-3. Provide constructive feedback on my answers
-4. Rate my responses (1-5 scale)
-5. Suggest improvements
-
-Start with: "Hello, I'm pleased to meet you. Tell me about yourself and why you're interested in this position."
+Start with: "Tell me about yourself and why you're interested in this position."
 
 ---EXAMPLE---
 
-Expected Interaction:
-Interviewer: [Question]
-Candidate: [I'll respond]
-Interviewer: [Feedback + Next Question]""",
+Job: Project Manager
+Organization: Tech startup
+Duration: 15 minutes
+Type: Behavioral
+
+Interviewer: "Tell me about yourself and why you're interested in this position."
+
+[Candidate responds]
+
+Interviewer: "Good background. Now, tell me about a time when you managed a project that went off track. How did you handle it?"
+
+[Candidate responds]
+
+Interviewer: "That's a solid example. I noticed you emphasized communication. Can you be more specific about the tools or frameworks you used?"
+
+Feedback: Your STAR structure was clear, but consider quantifying the impact more. For example, "reduced delays by 2 weeks" is stronger than "got back on track."
+
+Next question: "Describe your experience with Agile methodologies..."
+
+[Interview continues with 3-5 questions total, feedback after each]""",
             "category": "Data Collection > Interview Protocols",
-            "tags": ["interview", "mock-interview", "career", "practice"],
+            "tags": ["interview", "job-prep", "mock-interview", "career"],
             "source": "Adapted from Wolfram PromptRepository - MockInterviewer"
         },
         {
-            "title": "Semi-Structured Interview Guide Generator",
-            "prompt_text": """Create a semi-structured interview guide for qualitative research.
+            "title": "Research Interview Guide Generator",
+            "prompt_text": """Create a semi-structured interview guide for researching: {research_question}
 
-Research Question: {research_question}
-Target Population: {population}
-Interview Duration: {duration} minutes
-Research Paradigm: {paradigm} (phenomenological/grounded theory/narrative)
+Target participants: {population}
+Interview length: {duration} minutes
 
-Generate:
-1. Opening rapport-building questions (2-3)
-2. Core research questions (5-7 main questions)
-3. Probing follow-up questions for each core question
-4. Transition statements between topics
-5. Closing questions
-6. Ethical considerations and consent reminders
-
-Format as a field-ready interview protocol with timing suggestions.
+Include:
+1. Opening (rapport-building)
+2. 5-7 main questions with probes
+3. Closing questions
 
 ---EXAMPLE---
 
-Sample Output:
-INTERVIEW PROTOCOL
-Introduction (5 min):
-- Consent confirmation
-- Recording permission
-- [Rapport building questions]
+Research question: How do remote workers maintain work-life balance?
+Population: Remote employees (2+ years experience)
+Duration: 45 minutes
 
-Main Questions (40 min):
-1. [Core question]
-   - Probe: ...
-   - Probe: ...""",
+INTERVIEW GUIDE
+
+Opening (5 min):
+- Thanks for participating. This interview is confidential.
+- Tell me about your current remote work setup.
+- How long have you been working remotely?
+
+Main Questions (30 min):
+
+1. Daily Routines
+   Q: "Walk me through a typical workday from start to finish."
+   Probes: What time do you start? Where do you work? When do you stop?
+
+2. Boundaries
+   Q: "How do you separate work time from personal time?"
+   Probes: Physical spaces? Time-based rules? Digital boundaries?
+
+3. Challenges
+   Q: "What's the hardest part about maintaining balance?"
+   Probes: Can you give a specific example? How did you handle it?
+
+4. Strategies
+   Q: "What strategies have worked best for you?"
+   Probes: How did you discover this? Would you recommend it to others?
+
+5. Support Systems
+   Q: "Who or what helps you maintain balance?"
+   Probes: Family? Employer policies? Technology?
+
+Closing (10 min):
+- Is there anything we haven't covered that you think is important?
+- Any advice for new remote workers?
+- Thank you for your time.""",
             "category": "Data Collection > Interview Protocols",
-            "tags": ["qualitative", "interview-guide", "research-methods", "semi-structured"],
+            "tags": ["interview-guide", "qualitative", "semi-structured", "research"],
             "source": "Custom"
         },
         {
-            "title": "Interview Consent Script Generator",
-            "prompt_text": """Generate an informed consent script for research interviews.
+            "title": "Focus Group Discussion Protocol",
+            "prompt_text": """Design a focus group protocol for: {topic}
 
-Study Title: {study_title}
-Institution: {institution}
-IRB Number: {irb_number}
-Risks: {risk_level} (minimal/moderate/high)
-Benefits: {benefits}
-Compensation: {compensation}
-Recording: {recording_type} (audio/video/none)
+Participants: {n} people, {demographics}
+Duration: {duration} minutes
 
-Create a comprehensive verbal consent script including:
-1. Study purpose (layperson language)
-2. What participation involves
-3. Time commitment
-4. Risks and benefits
-5. Confidentiality measures
-6. Right to withdraw
-7. Contact information
-8. Consent confirmation questions
+Include: introduction, ice-breaker, discussion questions, closing.
 
-Make it conversational yet complete for IRB compliance.""",
+---EXAMPLE---
+
+Topic: Student perceptions of online learning
+Participants: 6-8 undergraduate students
+Duration: 90 minutes
+
+FOCUS GROUP PROTOCOL
+
+Introduction (10 min):
+"Welcome! Today we're discussing online learning experiences. There are no right or wrong answers. Please speak openly, and it's okay to disagree with each other."
+
+Ground rules: One person speaks at a time, respect all opinions, phones on silent.
+
+Ice-breaker (10 min):
+"Let's go around the room. Share your name, major, and one word that describes your online learning experience this semester."
+
+Discussion Questions (60 min):
+
+1. Overall Experience (15 min)
+"Think back to your first online class. What surprised you most?"
+- Follow-up: How has your view changed since then?
+
+2. Engagement (15 min)
+"Some students say they feel disconnected in online classes. Does this resonate with you? Why or why not?"
+- Probe: What makes you feel connected/disconnected?
+
+3. Learning Effectiveness (15 min)
+"Do you feel you learn as well online as in-person? What makes the difference?"
+- Probe: Specific examples?
+
+4. Improvements (15 min)
+"If you could change one thing about online learning, what would it be?"
+- Have participants vote on top suggestions
+
+Closing (10 min):
+"Any final thoughts? Thank you for participating. Your insights are valuable."
+
+Moderator notes: Watch for quiet participants and invite them in. Manage dominant speakers politely.""",
             "category": "Data Collection > Interview Protocols",
-            "tags": ["ethics", "consent", "irb", "qualitative-research"],
+            "tags": ["focus-group", "qualitative", "discussion", "protocol"],
             "source": "Custom"
         },
         
         # ============================================
-        # 3. DATA PREPARATION
+        # 2. DATA PREPARATION
         # ============================================
         
-        # Text Preprocessing
+        # Text Preprocessing (2 prompts)
         {
-            "title": "Text Cleaning Pipeline for Social Media Data",
-            "prompt_text": """Clean and preprocess the following social media text data for analysis:
+            "title": "Social Media Text Cleaner",
+            "prompt_text": """Clean this social media text for analysis:
 
-Raw Text: {raw_text}
+Text: {raw_text}
 
-Apply these preprocessing steps:
-1. Remove URLs, hashtags, mentions
-2. Handle emojis (convert to text descriptions)
-3. Fix common abbreviations and slang
-4. Remove special characters but preserve meaning
-5. Correct obvious typos
-6. Standardize spacing and formatting
+Remove: URLs, @mentions, hashtags, emojis
+Fix: Abbreviations (e.g., "u" → "you"), typos
+Preserve: Negations, capitalization for emphasis
 
-Provide:
-- Cleaned text
-- List of transformations made
-- Python code to reproduce this cleaning
+Return cleaned text.
 
 ---EXAMPLE---
 
-Example Input: "OMG!!! Check this out 😂 http://example.com #amazing @friend"
-Example Output: 
-Cleaned: "Oh my god check this out [laughing emoji] [link removed] [hashtag: amazing] [mention removed]"
-Transformations: [list...]""",
+Input: "OMG!!! I can't believe this happened 😭 Check out http://example.com #shocking @friend u won't believe it"
+
+Output:
+"Oh my god I cannot believe this happened check out [URL] [hashtag: shocking] [mention] you will not believe it"
+
+Transformations applied:
+- OMG → Oh my god
+- !!! → ! (normalized punctuation)
+- 😭 → [emoji: crying face]
+- URLs → [URL]
+- @mentions → [mention]
+- #hashtags → [hashtag: shocking]
+- u → you
+- Preserved "can't" negation""",
             "category": "Data Preparation > Text Preprocessing",
-            "tags": ["nlp", "text-cleaning", "preprocessing", "social-media"],
+            "tags": ["text-cleaning", "social-media", "nlp", "preprocessing"],
             "source": "Custom"
         },
         {
-            "title": "Stopword Removal with Context Preservation",
-            "prompt_text": """Remove stopwords from this text while preserving research-relevant context:
+            "title": "Remove Stopwords (Smart)",
+            "prompt_text": """Remove stopwords from: {text}
 
-Text: {text}
-Research Focus: {research_focus}
 Language: {language}
-Custom Stopwords to Keep: {words_to_keep}
+Keep: Negations (not, no, never), domain terms in {keep_words}
 
-Process:
-1. Use standard stopword list for {language}
-2. Preserve domain-specific important words
-3. Keep negations (not, no, never) as they affect sentiment
-4. Maintain sentence structure for context
-
-Return:
-- Processed text
-- List of removed words
-- List of preserved stopwords (with justification)
-- Word count before/after
+Return: processed text, word count before/after.
 
 ---EXAMPLE---
 
-Example:
-Input: "The patient is not feeling very well today"
-Focus: Medical sentiment
-Output: "patient not feeling well today"
-Preserved: "not" (negation affects sentiment)
-Removed: "the", "is", "very"
-Counts: 8 words → 5 words""",
+Text: "The patient is not feeling very well today and does not want to eat anything"
+Language: English
+Keep_words: ["patient"]
+
+Output:
+Processed: "patient not feeling well today not want eat"
+
+Details:
+- Removed: the, is, very, and, does, to, anything (7 words)
+- Kept: not (negation), patient (domain term)
+- Before: 14 words → After: 7 words (50% reduction)""",
             "category": "Data Preparation > Text Preprocessing",
             "tags": ["stopwords", "nlp", "text-processing"],
             "source": "Custom"
         },
+        
+        # Data Cleaning (2 prompts)
         {
-            "title": "Text Normalization for Cross-Cultural Analysis",
-            "prompt_text": """Normalize text data from multiple sources for comparative analysis:
+            "title": "Survey Data Quality Check",
+            "prompt_text": """Validate survey data: {n} responses
 
-Texts: {text_samples}
-Languages: {languages}
-Normalization Goal: {goal}
+Check for:
+- Speeders (completion time < {min_seconds} seconds)
+- Straight-liners (same answer to all questions)
+- Missing data patterns
+- Duplicate IPs
 
-Apply:
-1. Lowercasing (where appropriate)
-2. Accent/diacritic handling
-3. Number standardization
-4. Date format standardization
-5. Unicode normalization
-6. Spelling variants harmonization
-
-Provide normalized versions with annotation of changes for transparency in research.
+Provide: exclusion report, final sample size.
 
 ---EXAMPLE---
 
-Example:
-Input: "The café opened in 2023", "The cafe opened in two-thousand-twenty-three"
-Output (normalized): "the cafe opened in 2023", "the cafe opened in 2023"
-Changes: [removed accent, standardized number format]""",
-            "category": "Data Preparation > Text Preprocessing",
-            "tags": ["normalization", "cross-cultural", "text-standardization"],
-            "source": "Custom"
-        },
-        
-        # Data Cleaning
-        {
-            "title": "Survey Response Data Validation",
-            "prompt_text": """Validate and clean survey response data for analysis.
+Survey: Customer satisfaction (20 questions)
+Responses: 500
+Min_time: 120 seconds
 
-Dataset Info:
-- Sample size: {n_responses}
-- Variables: {variable_list}
-- Known issues: {issues}
+QUALITY REPORT:
 
-Check for:
-1. Missing data patterns (MAR/MCAR/MNAR)
-2. Impossible values (e.g., age = 150)
-3. Inconsistent responses (contradictions)
-4. Duplicate entries
-5. Outliers (statistical and logical)
-6. Response time anomalies (speeders/straightliners)
+Issues Found:
+1. Speeders: 23 responses (<120 sec)
+   - Fastest: 45 seconds (Response ID: R_123)
+   - Action: Exclude
 
-Provide:
-- Data quality report
-- Recommended exclusion criteria
-- Imputation strategies for missing data
-- Cleaned dataset specifications
-- CONSORT-style flow diagram of exclusions
+2. Straight-liners: 8 responses (all "5" ratings)
+   - Example: R_456 (answered 5 to all 20 questions)
+   - Action: Exclude
 
-Example Report:
-Total responses: 500
-Duplicates removed: 12
-Incomplete surveys: 45
-Failed attention checks: 8
-Speeders (<120 seconds): 15
-Final sample: 420""",
+3. Duplicate IPs: 12 responses (6 IP addresses)
+   - IP 192.168.1.1: 3 responses
+   - Action: Keep only first response per IP
+
+4. Missing data: 34 responses incomplete
+   - <50% complete: 12 (exclude)
+   - 50-90% complete: 22 (keep with flagging)
+
+RECOMMENDATIONS:
+- Total exclusions: 23 + 8 + 6 + 12 = 49 responses
+- Final sample: 451 valid responses
+- Response rate: 90.2% (451/500)
+
+Proceed with analysis? Yes, with noted limitations in methodology section.""",
             "category": "Data Preparation > Data Cleaning",
-            "tags": ["survey", "data-quality", "validation", "missing-data"],
+            "tags": ["survey", "data-quality", "validation", "cleaning"],
             "source": "Custom"
         },
         {
-            "title": "Interview Transcript Quality Check",
-            "prompt_text": """Review and clean interview transcript for quality issues.
+            "title": "Remove Duplicate Records",
+            "prompt_text": """Find and remove duplicates in dataset with {n} records.
 
-Transcript: {transcript_text}
-Interview ID: {id}
-Duration: {duration}
-Transcription Method: {method} (auto/manual)
+Match criteria: {fields}
+Resolution: Keep {keep_strategy}
 
-Check for:
-1. Inaudible sections marked appropriately
-2. Speaker identification consistency
-3. Timestamps accuracy
-4. Non-verbal cues captured [laughs], [pause]
-5. Filler words (um, uh) - keep or remove?
-6. Sensitive information for anonymization
-
-Provide:
-- Quality rating (1-5)
-- List of issues found
-- Corrected transcript
-- Anonymization suggestions
-- Recommendations for re-transcription if needed""",
-            "category": "Data Preparation > Data Cleaning",
-            "tags": ["qualitative", "transcription", "data-quality", "interviews"],
-            "source": "Custom"
-        },
-        {
-            "title": "Dataset Merge & Deduplication",
-            "prompt_text": """Merge multiple datasets and remove duplicates for longitudinal study.
-
-Datasets:
-- Wave 1: {dataset1_info}
-- Wave 2: {dataset2_info}
-- Wave 3: {dataset3_info}
-
-Matching Criteria: {matching_fields}
-Participant Tracking: {id_system}
-
-Execute:
-1. Fuzzy matching on participant IDs
-2. Duplicate detection across waves
-3. Conflict resolution for divergent data
-4. Longitudinal data structure creation
-5. Attrition analysis
-
-Output:
-- Merged dataset structure
-- Matching statistics
-- Unmatched cases report
-- Data dictionary for merged file
-- Python/R code for reproducibility""",
-            "category": "Data Preparation > Data Cleaning",
-            "tags": ["data-merge", "deduplication", "longitudinal", "data-management"],
-            "source": "Custom"
-        },
-        
-        # Data Formatting
-        {
-            "title": "Qualitative Data Coding Structure",
-            "prompt_text": """Structure qualitative data for systematic coding and analysis.
-
-Data Type: {data_type} (interviews/focus groups/observations)
-Number of Units: {n_units}
-Coding Approach: {approach} (deductive/inductive/hybrid)
-Software: {software} (NVivo/Atlas.ti/Dedoose/manual)
-
-Create:
-1. File naming convention
-2. Folder structure for data organization
-3. Metadata template for each data unit
-4. Initial codebook structure
-5. Memo template for analytical notes
-6. Export format for reporting
-
-Example Structure:
-```
-Project_Root/
-├── RawData/
-│   ├── Transcripts/
-│   │   ├── P001_Interview_2024-01-15.docx
-│   │   ├── P002_Interview_2024-01-16.docx
-├── Codes/
-│   ├── Codebook_v1.xlsx
-├── Memos/
-├── Analysis/
-```
-
-Include metadata template in JSON/CSV format.""",
-            "category": "Data Preparation > Data Formatting",
-            "tags": ["qualitative", "coding", "data-organization", "structure"],
-            "source": "Custom"
-        },
-        {
-            "title": "Survey Data Restructuring - Long to Wide Format",
-            "prompt_text": """Convert survey data from long format to wide format for analysis.
-
-Current Format: Long/longitudinal
-- Variables: {variables}
-- Time points: {time_points}
-- Participant ID: {id_var}
-
-Target: Wide format suitable for {analysis_type}
-
-Provide:
-1. Restructuring logic
-2. Python (pandas) or R (tidyr) code
-3. Variable naming convention for time points
-4. Handling of missing timepoints
-5. Data validation post-transformation
+Return: deduplicated data, duplicate log.
 
 ---EXAMPLE---
 
-Example:
-Long format:
-ID | Time | Score
-1  | T1   | 85
-1  | T2   | 90
+Records: 1,200 participants
+Fields: email, name
+Strategy: Keep first occurrence
 
-Wide format:
-ID | Score_T1 | Score_T2
-1  | 85       | 90
+DEDUPLICATION REPORT:
 
-Include complete working code.""",
+Duplicates Found: 45 records
+
+Examples:
+1. email: john.doe@email.com
+   - Record 1 (ID: 001, Date: 2024-01-15) ← KEPT
+   - Record 2 (ID: 756, Date: 2024-02-01) ← REMOVED
+
+2. name: Jane Smith (different emails)
+   - Record 1 (jane.smith@email.com, ID: 034) ← KEPT
+   - Record 2 (j.smith@work.com, ID: 892) ← REMOVED (likely same person)
+
+Actions Taken:
+- Removed: 45 duplicate records
+- Final dataset: 1,155 unique records
+- Duplicate rate: 3.75%
+
+Exported:
+- Clean data: participants_clean.csv (1,155 rows)
+- Duplicates log: duplicates_removed.csv (45 rows with both IDs)""",
+            "category": "Data Preparation > Data Cleaning",
+            "tags": ["duplicates", "data-cleaning", "deduplication"],
+            "source": "Custom"
+        },
+        
+        # Data Formatting (2 prompts)
+        {
+            "title": "Long to Wide Format Converter",
+            "prompt_text": """Convert survey data from long to wide format.
+
+Variables: {variables}
+Time points: {time_points}
+ID variable: {id_var}
+
+Return: restructured data.
+
+---EXAMPLE---
+
+Variables: stress_score, sleep_hours
+Time: T1, T2, T3
+ID: participant_id
+
+INPUT (Long format):
+participant_id | time | stress_score | sleep_hours
+001           | T1   | 7           | 6
+001           | T2   | 5           | 7
+001           | T3   | 4           | 8
+002           | T1   | 8           | 5
+002           | T2   | 8           | 5
+002           | T3   | 6           | 6
+
+OUTPUT (Wide format):
+participant_id | stress_T1 | stress_T2 | stress_T3 | sleep_T1 | sleep_T2 | sleep_T3
+001           | 7         | 5         | 4         | 6        | 7        | 8
+002           | 8         | 8         | 6         | 5        | 5        | 6
+
+Benefits:
+- Ready for repeated measures ANOVA
+- Easier visualization of individual trajectories
+- Compatible with most statistical software""",
             "category": "Data Preparation > Data Formatting",
-            "tags": ["data-transformation", "survey", "longitudinal", "pandas"],
+            "tags": ["data-transformation", "longitudinal", "reshape"],
             "source": "Custom"
         },
         {
-            "title": "Citation Data Formatting for Meta-Analysis",
-            "prompt_text": """Format extracted citation data for systematic review/meta-analysis.
+            "title": "Transcript Formatter for Coding",
+            "prompt_text": """Format interview transcript for qualitative coding.
 
-Data Source: {source} (Web of Science/Scopus/PubMed)
-Number of Studies: {n_studies}
-Required Fields: {fields}
+Raw transcript: {transcript}
+Speaker labels: {speakers}
 
-Standardize:
-1. Author names (Last, F.M. format)
-2. Journal names (full vs. abbreviated)
-3. Publication dates (YYYY-MM-DD)
-4. DOI formatting
-5. Article types categorization
-6. Extract effect sizes if reported
+Add: Line numbers, timestamps, speaker tags.
 
-Create:
-- Formatted reference list
-- Data extraction spreadsheet
-- PRISMA flow diagram data
-- Duplicate detection report
+---EXAMPLE---
 
-Output as CSV/Excel with columns for:
-[Author, Year, Title, Journal, DOI, Study_Type, Effect_Size, Sample_Size, ...]""",
+Raw transcript:
+"So tell me about your experience. Well, I started working remotely in 2020 and it was challenging at first. What made it challenging? The isolation mainly."
+
+Speakers: Interviewer (I), Participant (P)
+
+FORMATTED:
+
+[00:00:15]
+001 I: So tell me about your experience.
+002 
+003 P: Well, I started working remotely in 2020 and it was challenging at 
+004 first.
+005
+[00:00:28]
+006 I: What made it challenging?
+007
+008 P: The isolation mainly.
+009
+
+Format notes:
+- Line numbers every line (for coding reference)
+- Timestamps every 30 seconds
+- Speaker tags (I/P) before each turn
+- Blank lines between speakers
+- Text wrapped at 80 characters
+
+Ready for: NVivo, Atlas.ti, manual coding""",
             "category": "Data Preparation > Data Formatting",
-            "tags": ["meta-analysis", "citations", "systematic-review", "bibliography"],
+            "tags": ["transcription", "qualitative", "formatting", "coding"],
             "source": "Custom"
         },
         
         # ============================================
-        # 4. TEXT ANALYSIS
+        # 3. TEXT ANALYSIS
         # ============================================
         
-        # Text Summarization
+        # Text Summarization (3 prompts)
         {
             "title": "Academic Article Summarizer",
-            "prompt_text": """Summarize the following academic article/document for research purposes.
+            "prompt_text": """Summarize this research article in structured format.
 
-Document: {document_text}
-Target Audience: {audience} (peers/general public/students)
-Summary Length: {length} (abstract/paragraph/comprehensive)
+Article: {article_text}
 
-Provide a structured summary including:
-1. Research Question/Objective (1 sentence)
-2. Theoretical Framework (if applicable)
-3. Methodology (1-2 sentences)
-4. Key Findings (3-5 bullet points)
-5. Main Contribution to field
-6. Limitations mentioned
-7. Future research directions
-
-Format for easy reference and citation.
+Include: Research question, method, key findings (3-5 points), implications.
 
 ---EXAMPLE---
 
-Sample Output:
-**Research Question:** How does social media use affect adolescent mental health?
-**Framework:** Uses Social Comparison Theory
-**Method:** Longitudinal survey (n=1,200, ages 13-17, 2-year follow-up)
-**Findings:**
-- Passive scrolling associated with 23% increase in depressive symptoms
-- Active engagement showed no negative effects
-- Effect moderated by self-esteem
-**Contribution:** First longitudinal evidence for passive vs. active use distinction
-**Limitations:** Self-report measures, limited to Instagram users
-**Future Directions:** Need experimental designs, neurobiological mechanisms""",
+Article: [Paste full article text about social media and mental health]
+
+SUMMARY:
+
+Research Question:
+Does passive social media use predict depression in adolescents?
+
+Method:
+Longitudinal survey; n=1,247 teens (ages 13-17); 2-year follow-up; measured social media habits and depressive symptoms at 3 time points.
+
+Key Findings:
+1. Passive scrolling linked to 23% increase in depressive symptoms (β=.23, p<.001)
+2. Active engagement (posting, commenting) showed no negative effects
+3. Effect stronger for girls and younger adolescents
+4. Social comparison fully mediated the relationship
+5. Results held after controlling for baseline mental health
+
+Implications:
+- Interventions should target passive use specifically, not overall screen time
+- Focus on reducing upward social comparisons
+- Age and gender matter - tailor approaches accordingly
+
+Study Limitations: Self-report measures, limited to Instagram users
+
+Citation: [Author et al., 2023, Journal of Adolescent Psychology]""",
             "category": "Text Analysis > Text Summarization",
-            "tags": ["academic", "literature-review", "summarization"],
+            "tags": ["summarization", "academic", "research"],
             "source": "Adapted from Wolfram PromptRepository - SummarizeContent"
         },
         {
-            "title": "Web Article Summarizer for Research",
-            "prompt_text": """Summarize content from this URL for academic/research purposes:
+            "title": "Web Article Research Summarizer",
+            "prompt_text": """Summarize this web article for research purposes.
 
 URL: {url}
-Purpose: {research_purpose}
-Focus: {focus_areas}
 
-Extract and summarize:
-1. Main thesis/argument
-2. Key evidence presented
-3. Data/statistics cited (with verification note)
-4. Author credentials and potential bias
-5. Publication date and relevance
-6. Useful quotes (with page/paragraph reference)
-7. Related sources mentioned
-
-Provide APA citation for the source.
+Extract: Main argument, key data/statistics, author credibility, bias indicators, useful quotes.
 
 ---EXAMPLE---
 
-Example:
-Source: [Auto-generated citation]
-Summary: Article argues that remote work increases productivity by 13% based on Stanford study...
-Key Data: 13% productivity increase (Bloom et al., 2015), 50% reduction in attrition...
-Bias Check: Published by remote work advocacy group
-Relevance: Published 2023, highly relevant for post-pandemic research
-Useful Quote: "The productivity boost comes primarily from reduced distractions..." (para. 4)""",
+URL: https://writings.stephenwolfram.com/2023/05/the-new-world-of-llm-functions/
+
+RESEARCH SUMMARY:
+
+Main Argument:
+LLMs can be integrated as computational functions, enabling new ways to combine natural language processing with traditional programming and computation.
+
+Key Points:
+1. LLM functions treat language models as callable functions within code
+2. Enables "prompt engineering" at the programming level
+3. Combines symbolic computation with neural networks
+4. Opens possibilities for hybrid AI systems
+
+Data/Statistics:
+- Example: Function calls reduce prompt complexity by 60%
+- Performance: 10x faster than traditional NLP pipelines for certain tasks
+
+Author Credibility:
+- Stephen Wolfram (creator of Mathematica, Wolfram Alpha)
+- Published: May 2023
+- Highly technical, first-person account of implementation
+
+Bias Indicators:
+- Promotes Wolfram Language specifically
+- Author has commercial interest (Wolfram Research)
+- Balanced: acknowledges limitations and challenges
+
+Useful Quotes:
+"The integration of LLMs into computational workflows represents a fundamental shift in how we think about programming" (para. 3)
+
+"Not about replacing programmers, but augmenting what's computable" (para. 12)
+
+Relevance: High for AI + research methods, programming, computational social science
+
+Source Type: Technical blog post by domain expert""",
             "category": "Text Analysis > Text Summarization",
-            "tags": ["web-content", "research", "url-summary"],
-            "source": "Adapted from Wolfram PromptRepository - SummarizeContent"
+            "tags": ["web-summary", "url", "research"],
+            "source": "Adapted from Wolfram PromptRepository - SummarizeContent (URL version)"
         },
         {
-            "title": "Multi-Document Synthesis for Literature Review",
-            "prompt_text": """Synthesize findings across multiple research articles on the same topic.
+            "title": "Multi-Document Literature Synthesis",
+            "prompt_text": """Synthesize findings from these {n} articles on: {topic}
 
 Articles: {article_list}
-Research Topic: {topic}
-Synthesis Goal: {goal}
 
-Create a synthesis that:
-1. Identifies common themes across studies
-2. Notes contradictory findings with explanations
-3. Traces evolution of ideas chronologically
-4. Highlights methodology differences
-5. Identifies research gaps
-6. Suggests theoretical integration
-
-Format as a narrative literature review section (500-800 words) with inline citations.
+Create: Narrative synthesis identifying themes, contradictions, gaps, chronological development.
 
 ---EXAMPLE---
 
-Example Output:
-Research on [topic] has evolved significantly over the past decade. Early studies (Author1, 2015; Author2, 2016) emphasized [theme 1], finding that [finding]. However, more recent investigations (Author3, 2022) have challenged this view, demonstrating [contradictory finding]. This discrepancy may be explained by [methodological difference]...
+Topic: Remote work and productivity
+Articles: 5 studies (2020-2023)
 
-[Continue with integrated narrative]
+LITERATURE SYNTHESIS:
 
-Notable gaps include: [1] lack of longitudinal designs, [2] limited diversity in samples...""",
+Theme 1: Productivity Effects (Mixed Evidence)
+Early pandemic studies (Smith, 2020; Jones, 2020) reported productivity gains of 10-15%, primarily attributed to reduced commute time and fewer office distractions. However, more recent research (Chen, 2022; Williams, 2023) found these effects diminished over time, with productivity returning to baseline after 12-18 months. Martinez (2023) suggests this decline correlates with "Zoom fatigue" and erosion of work-life boundaries.
+
+Theme 2: Individual Differences Matter
+Across all studies, effects varied significantly by: job type (knowledge work vs. manual), personality (introversion/extroversion), home environment (dedicated office vs. shared spaces), and caregiving responsibilities. Chen (2022) found a 30% productivity gap between workers with and without dependent care duties.
+
+Theme 3: Organizational Support Critical
+Williams (2023) and Martinez (2023) both emphasize that productivity outcomes depend heavily on managerial practices. Organizations with clear communication protocols, regular check-ins, and investment in technology saw better outcomes.
+
+Contradictions:
+- Smith (2020): 13% productivity increase
+- Chen (2022): No significant change
+- Possible explanation: Smith measured short-term (3 months), Chen long-term (2 years)
+
+Research Gaps:
+1. Limited longitudinal studies beyond 2 years
+2. Underrepresented populations (non-desk workers, Global South)
+3. Mental health mediators understudied
+4. Few experimental designs (mostly correlational)
+
+Chronological Development:
+2020: Initial optimism about productivity gains
+2021-2022: More nuanced findings emerge
+2023: Recognition of complexity, individual differences
+
+Theoretical Integration:
+Job Demands-Resources theory (Bakker & Demerouti) best explains observed patterns - remote work simultaneously increases resources (autonomy) and demands (boundary management).""",
             "category": "Text Analysis > Text Summarization",
-            "tags": ["synthesis", "literature-review", "meta-summary"],
+            "tags": ["literature-review", "synthesis", "meta-analysis"],
             "source": "Custom"
         },
         
-        # Text Classification
+        # Text Classification (2 prompts)
         {
             "title": "Social Media Post Classifier",
-            "prompt_text": """Classify the following social media posts into predefined categories for content analysis.
+            "prompt_text": """Classify these social media posts into categories.
 
 Posts: {posts}
-Classification Scheme:
-- Categories: {categories}
-- Mutually exclusive: {yes/no}
-- Multiple labels allowed: {yes/no}
+Categories: {category_list}
+Allow multiple labels: {yes/no}
 
-For each post, provide:
-1. Primary category
-2. Secondary category (if applicable)
-3. Confidence score (0-100%)
-4. Key words/phrases that influenced classification
-5. Ambiguous cases flagged for manual review
+For each post provide: primary category, confidence %, key phrases.
 
 ---EXAMPLE---
 
-Example:
-Post: "Just voted! Make your voice heard 🗳️ #Election2024"
-Primary: Political
-Secondary: Civic Engagement
-Confidence: 95%
-Key phrases: "voted", "election", hashtag
-Notes: Clear political content
+Posts: 3 tweets
+Categories: Political, News, Personal, Marketing, Educational
+Multiple labels: Yes
 
-Post: "Love this new cafe downtown!"
-Primary: Personal
+CLASSIFICATION RESULTS:
+
+Post 1: "Just voted! Make your voice heard 🗳️ #Election2024"
+Primary: Political (95%)
+Secondary: Personal (60%)
+Key phrases: "voted", "#Election2024"
+Reasoning: Clear political content + personal experience
+
+Post 2: "New study shows coffee may reduce heart disease risk by 15%"
+Primary: News (90%)
+Secondary: Educational (75%)
+Key phrases: "new study", "reduce heart disease"
+Reasoning: Reports research finding, educational value
+
+Post 3: "Excited to share our new product launch! Limited time offer 50% off"
+Primary: Marketing (98%)
 Secondary: None
-Confidence: 88%
-Key phrases: "love", "cafe"
-Notes: Could be marketing if business account - flag for review
+Key phrases: "product launch", "50% off", "limited time"
+Reasoning: Explicit promotional content
 
-Process all {n} posts and provide summary statistics.""",
+Summary Statistics:
+- Political: 1 (33%)
+- News: 1 (33%)
+- Marketing: 1 (33%)
+- Personal: 1 secondary (33%)
+- Educational: 1 secondary (33%)
+
+Confidence: Average 94% (high reliability)""",
             "category": "Text Analysis > Text Classification",
             "tags": ["classification", "social-media", "content-analysis"],
             "source": "Custom"
         },
         {
             "title": "Survey Open-Ended Response Categorizer",
-            "prompt_text": """Categorize open-ended survey responses into themes for quantitative analysis.
+            "prompt_text": """Categorize open-ended survey responses.
 
 Question: {survey_question}
-Responses: {responses}
-Number of responses: {n}
+Responses: {responses} (n={count})
 
-Develop categorization:
-1. Read all responses to identify emergent themes
-2. Create 5-10 mutually exclusive categories
-3. Provide clear decision rules for each category
-4. Code all responses
-5. Calculate inter-rater reliability if multiple coders
-6. Provide frequency distribution
+Create 5-8 categories, code all responses, provide frequency distribution.
 
 ---EXAMPLE---
 
-Example:
-Question: "What is the main barrier to using public transportation?"
+Question: "What is your biggest challenge working from home?"
+Responses: 50 responses
 
-Categories identified:
-1. Cost/Affordability (Decision rule: mentions price, expense, cost)
-2. Accessibility (mentions distance, availability, routes)
-3. Time/Convenience (mentions schedules, duration, waiting)
-4. Safety concerns (mentions crime, cleanliness, harassment)
-5. Other
+CATEGORY DEVELOPMENT:
 
-Coding Results:
-Response: "It's too expensive for daily use" → Category 1 (Cost)
-Response: "No bus route near my home" → Category 2 (Accessibility)
+Categories Created:
+1. Isolation/Loneliness (mentions feeling disconnected, missing colleagues)
+2. Distractions (family, household tasks, pets)
+3. Technology Issues (internet, software, equipment)
+4. Work-Life Boundaries (difficulty "switching off", always available)
+5. Communication Challenges (misunderstandings, lack of informal chat)
+6. Workspace/Ergonomics (no dedicated office, uncomfortable setup)
+7. Other
 
-Distribution:
-Cost: 35% (n=70)
-Accessibility: 28% (n=56)
-Time: 22% (n=44)
-Safety: 10% (n=20)
-Other: 5% (n=10)""",
+CODING RESULTS:
+
+Category 1 (Isolation): n=18 (36%)
+- "Missing the social interaction with coworkers"
+- "Feel disconnected from the team"
+- "Loneliness is a real issue"
+
+Category 2 (Distractions): n=12 (24%)
+- "Kids interrupting Zoom calls"
+- "Household chores calling my name"
+- "My dog barks during meetings"
+
+Category 3 (Technology): n=7 (14%)
+- "Slow internet connection"
+- "VPN always disconnecting"
+- "Don't have proper equipment"
+
+Category 4 (Boundaries): n=8 (16%)
+- "Never truly log off anymore"
+- "Working evenings and weekends"
+- "Hard to separate work from home"
+
+Category 5 (Communication): n=3 (6%)
+- "Email miscommunications"
+- "Miss hallway conversations"
+
+Category 6 (Workspace): n=2 (4%)
+- "Working from my couch hurts my back"
+
+FREQUENCY DISTRIBUTION:
+Isolation: 36% ████████████████
+Distractions: 24% ██████████
+Work-Life: 16% ███████
+Technology: 14% ██████
+Communication: 6% ███
+Workspace: 4% ██
+
+Primary Finding: Isolation/loneliness is the dominant challenge (36%), followed by distractions (24%).""",
             "category": "Text Analysis > Text Classification",
             "tags": ["survey", "open-ended", "categorization", "coding"],
             "source": "Custom"
         },
-        {
-            "title": "News Article Topic Classifier",
-            "prompt_text": """Classify news articles by topic for media analysis research.
-
-Articles: {article_texts}
-Topic Taxonomy: {topic_list}
-Classification Level: {level} (primary topic only / multi-label)
-
-For each article:
-1. Assign primary topic
-2. Assign secondary topics (if multi-label)
-3. Identify key entities (people, organizations, locations)
-4. Determine article slant/framing (if applicable)
-5. Extract publication metadata
-
----EXAMPLE---
-
-Example Classification:
-Article: "Senator introduces bill to reduce carbon emissions..."
-Primary Topic: Environment & Climate
-Secondary Topics: Politics, Energy Policy
-Key Entities: [Senator Name], US Senate, Environmental Protection Agency
-Framing: Policy-focused, neutral tone
-Metadata: Source: Washington Post, Date: 2024-01-15, Author: [Name]
-
-Provide CSV output:
-article_id, primary_topic, secondary_topics, entities, slant, source, date""",
-            "category": "Text Analysis > Text Classification",
-            "tags": ["news", "media-analysis", "topic-modeling"],
-            "source": "Custom"
-        },
         
-        # Sentiment Analysis
+        # Sentiment Analysis (3 prompts)
         {
-            "title": "Advanced Sentiment Analysis with Context",
-            "prompt_text": """Analyze the sentiment of the following text with detailed contextual understanding.
+            "title": "Sentiment Analyzer (Contextual)",
+            "prompt_text": """Analyze sentiment of this text with full context.
 
 Text: {text}
-Analysis Type: {type} (document-level/sentence-level/aspect-based)
-Domain: {domain} (general/product reviews/social media/political)
 
-Provide:
-1. Overall sentiment: Positive/Negative/Neutral/Mixed
-2. Sentiment score: -1 (very negative) to +1 (very positive)
-3. Confidence level: 0-100%
-4. Key sentiment-bearing words/phrases
-5. Contextual modifiers (negations, intensifiers)
-6. Emotional dimensions (joy, anger, sadness, fear, surprise)
-7. Sarcasm/irony detection
+Provide: Overall sentiment, score (-1 to +1), confidence %, key phrases, emotions, sarcasm check.
 
 ---EXAMPLE---
 
-Example:
 Text: "Halloween is most likely the greatest holiday of them all. It hits all the high notes for me! Although, I don't like having my doorbell rung every 5 minutes."
 
-Analysis:
-Overall Sentiment: Mixed (Primarily Positive with Negative Aspect)
-Score: +0.6
+SENTIMENT ANALYSIS:
+
+Overall Sentiment: Mixed (Leaning Positive)
+Sentiment Score: +0.6 (on scale of -1 to +1)
 Confidence: 85%
-Positive Indicators: "greatest holiday", "hits all the high notes"
-Negative Indicators: "don't like", "every 5 minutes" (implies annoyance)
-Emotions: Joy (high), Annoyance (moderate)
-Structure: Positive statement + Positive elaboration + Negative caveat
-Sarcasm: Not detected
-Aspect-Based:
-- Halloween as holiday: Very Positive (+0.9)
-- Doorbell activity: Negative (-0.4)""",
+
+Breakdown by Section:
+1. "Halloween is most likely the greatest holiday" 
+   → Very Positive (+0.9)
+   
+2. "It hits all the high notes for me!"
+   → Positive (+0.8)
+   
+3. "Although, I don't like having my doorbell rung every 5 minutes"
+   → Negative (-0.4)
+
+Key Sentiment Phrases:
+Positive: "greatest holiday", "hits all the high notes"
+Negative: "don't like", "every 5 minutes" (implies annoyance)
+
+Emotional Dimensions:
+- Joy: High (enthusiasm about holiday)
+- Annoyance: Moderate (doorbell interruptions)
+- Satisfaction: High (overall positive experience)
+
+Contextual Modifiers:
+- "Although" signals contrast/caveat
+- "every 5 minutes" is hyperbole indicating frustration
+- Exclamation mark reinforces positive emotion
+
+Sarcasm Detection: Not detected (genuine sentiment)
+
+Interpretation:
+Speaker loves Halloween overall but has a specific frustration with frequent trick-or-treaters. The positive sentiment (love of holiday) outweighs the negative (doorbell annoyance), resulting in net positive score.
+
+Use Case: Product/service feedback analysis, social listening""",
             "category": "Text Analysis > Sentiment Analysis",
-            "tags": ["sentiment", "emotion", "nlp", "text-analysis"],
+            "tags": ["sentiment", "emotion", "nlp"],
             "source": "Adapted from Wolfram PromptRepository - SentimentAnalyze"
         },
         {
-            "title": "Comparative Sentiment Across Time Periods",
-            "prompt_text": """Analyze sentiment trends across different time periods for longitudinal research.
+            "title": "Comparative Sentiment Over Time",
+            "prompt_text": """Analyze sentiment trends across time periods.
 
-Dataset: {text_data_by_period}
-Time Periods: {periods}
-Context: {research_context}
+Text data: {texts_by_period}
+Periods: {period_labels}
 
-For each period, analyze:
-1. Average sentiment score
-2. Sentiment distribution (% positive/negative/neutral)
-3. Most common positive/negative themes
-4. Sentiment volatility (standard deviation)
-5. Significant sentiment shifts between periods
-
-Provide:
-- Time series visualization data
-- Statistical comparison (t-tests/ANOVA)
-- Qualitative interpretation of trends
-- Correlation with external events (if known)
+For each period: average sentiment, distribution, top themes, significant shifts.
 
 ---EXAMPLE---
 
-Example Output:
-Period 1 (Jan-Mar 2023):
-Avg Sentiment: +0.45
-Distribution: 65% positive, 20% neutral, 15% negative
-Top Positive Theme: "economic recovery"
-Top Negative Theme: "inflation concerns"
+Data: Customer reviews
+Periods: Q1 2023, Q2 2023, Q3 2023
 
-Period 2 (Apr-Jun 2023):
-Avg Sentiment: +0.28
-Distribution: 52% positive, 25% neutral, 23% negative
-Top Positive Theme: "job market"
-Top Negative Theme: "cost of living"
+SENTIMENT TREND ANALYSIS:
 
-Trend Analysis:
-- Significant decrease in sentiment (p<0.01)
-- Negative sentiment increased by 8 percentage points
-- Shift from optimism to cautious concern
-- Possible correlation with Fed rate hikes in April""",
+Period 1 (Q1 2023): n=450 reviews
+Average Sentiment: +0.52 (Positive)
+Distribution: 68% positive, 20% neutral, 12% negative
+Top Positive Theme: "fast delivery" (mentioned 156 times)
+Top Negative Theme: "customer service delays" (mentioned 34 times)
+
+Period 2 (Q2 2023): n=523 reviews
+Average Sentiment: +0.38 (Mildly Positive)
+Distribution: 58% positive, 25% neutral, 17% negative
+Top Positive Theme: "product quality" (mentioned 187 times)
+Top Negative Theme: "price increases" (mentioned 67 times)
+⚠️ SHIFT: Sentiment declined by 0.14 points (p=0.003, significant)
+
+Period 3 (Q3 2023): n=489 reviews
+Average Sentiment: +0.61 (Positive)
+Distribution: 71% positive, 18% neutral, 11% negative
+Top Positive Theme: "new features" (mentioned 201 times)
+Top Negative Theme: "occasional bugs" (mentioned 28 times)
+✓ IMPROVEMENT: Sentiment recovered to above Q1 levels
+
+TREND VISUALIZATION:
+Q1: +0.52 ████████████
+Q2: +0.38 ████████ (↓ 27% decline)
+Q3: +0.61 ██████████████ (↑ 61% improvement)
+
+Key Findings:
+1. Q2 dip correlates with price increase announcement (external event)
+2. Q3 recovery linked to new feature release
+3. Product quality consistently praised across all periods
+4. Customer service mentioned less frequently in Q3 (may indicate improvement)
+
+Statistical Tests:
+- Q1 vs Q2: t=-2.89, p=0.003 (significant decrease)
+- Q2 vs Q3: t=4.12, p<0.001 (significant increase)
+- Overall trend: Positive (recovered and exceeded baseline)
+
+Recommendation: Monitor price sensitivity; new features boost sentiment.""",
             "category": "Text Analysis > Sentiment Analysis",
-            "tags": ["longitudinal", "trend-analysis", "time-series", "sentiment"],
+            "tags": ["sentiment", "trend-analysis", "longitudinal"],
             "source": "Custom"
         },
         {
-            "title": "Multi-Lingual Sentiment Analysis",
-            "prompt_text": """Conduct sentiment analysis on texts in multiple languages for cross-cultural research.
+            "title": "Aspect-Based Sentiment Analysis",
+            "prompt_text": """Analyze sentiment for specific aspects/features.
 
-Texts: {multilingual_texts}
-Languages: {language_list}
-Research Question: {research_question}
+Text: {review_text}
+Aspects: {aspect_list}
 
-Process:
-1. Detect language of each text
-2. Apply language-appropriate sentiment analysis
-3. Normalize scores for cross-cultural comparison
-4. Account for cultural differences in expression
-5. Compare sentiment patterns across languages/cultures
-
-Considerations:
-- Idioms and cultural expressions
-- Politeness norms (e.g., indirect communication in some cultures)
-- Translation validation for ambiguous cases
+For each aspect: sentiment score, supporting quotes.
 
 ---EXAMPLE---
 
-Example:
-Text 1 (English): "This is absolutely terrible!"
-Sentiment: Very Negative (-0.9)
-Cultural note: Direct expression common in English
+Text: "The hotel room was spacious and clean, which I loved. However, the staff were quite rude when I asked for extra towels. The location is perfect - right downtown. But the Wi-Fi barely worked and kept disconnecting."
 
-Text 2 (Japanese): "少し残念です" (It's a bit disappointing)
+Aspects: Room, Staff, Location, Amenities
+
+ASPECT-BASED SENTIMENT:
+
+Aspect 1: Room
+Sentiment: Positive (+0.8)
+Score Breakdown:
+- Size: Positive ("spacious")
+- Cleanliness: Positive ("clean")
+Supporting Quote: "The hotel room was spacious and clean, which I loved."
+Overall: Strongly positive experience
+
+Aspect 2: Staff
+Sentiment: Negative (-0.7)
+Score Breakdown:
+- Helpfulness: Negative ("quite rude")
+- Responsiveness: Negative (implied by context)
+Supporting Quote: "the staff were quite rude when I asked for extra towels"
+Overall: Poor service experience
+
+Aspect 3: Location
+Sentiment: Very Positive (+0.9)
+Score Breakdown:
+- Convenience: Positive ("perfect", "right downtown")
+Supporting Quote: "The location is perfect - right downtown."
+Overall: Excellent location
+
+Aspect 4: Amenities
 Sentiment: Negative (-0.6)
-Cultural note: Understatement common; actual sentiment may be stronger
-Adjusted Score: -0.8 (accounting for cultural indirect communication)
+Score Breakdown:
+- Wi-Fi: Very Negative ("barely worked", "kept disconnecting")
+Supporting Quote: "the Wi-Fi barely worked and kept disconnecting"
+Overall: Technology issues
 
-Cross-Cultural Finding:
-Similar underlying negative sentiment, but expressed with different intensity levels due to cultural communication norms.""",
+SUMMARY MATRIX:
+Aspect    | Sentiment | Score | Impact
+----------|-----------|-------|--------
+Room      | Positive  | +0.8  | High
+Staff     | Negative  | -0.7  | High
+Location  | Positive  | +0.9  | High
+Amenities | Negative  | -0.6  | Medium
+
+Overall Rating Prediction: 3.2/5 stars
+(Positive room + location offset by negative staff + Wi-Fi)
+
+Actionable Insights:
+1. URGENT: Address staff training (highest negative impact)
+2. Fix Wi-Fi infrastructure
+3. Maintain room quality standards (strength)
+4. Leverage location in marketing (strength)""",
             "category": "Text Analysis > Sentiment Analysis",
-            "tags": ["multilingual", "cross-cultural", "sentiment", "translation"],
+            "tags": ["aspect-sentiment", "reviews", "detailed-analysis"],
             "source": "Custom"
         },
         
-        # Word Frequency & Patterns
+        # Word Frequency & Patterns (2 prompts)
         {
-            "title": "Word Frequency Analysis with Context",
-            "prompt_text": """Analyze word frequency patterns in the corpus with contextual insights.
-
-Corpus: {text_corpus}
-Corpus Size: {n_documents} documents, {n_words} words
-Research Focus: {focus}
-
-Generate:
-1. Top 50 most frequent words (excluding stopwords)
-2. Top 50 most frequent bigrams (2-word phrases)
-3. Top 30 most frequent trigrams (3-word phrases)
-4. Keywords in Context (KWIC) for top 10 words
-5. Comparative frequency (if multiple sub-corpora)
-6. TF-IDF scores for document distinctiveness
-
-Visualizations needed:
-- Word cloud data
-- Frequency distribution plot data
-- Zipf's law fit
-
----EXAMPLE---
-
-Example Output:
-TOP WORDS:
-1. research (n=342, 2.1% of corpus)
-2. data (n=298, 1.8%)
-3. analysis (n=276, 1.7%)
-...
-
-TOP BIGRAMS:
-1. "social media" (n=156)
-2. "mental health" (n=142)
-3. "qualitative research" (n=128)
-...
-
-KWIC for "participants":
-"...informed consent, **participants** completed a survey..."
-"...recruited **participants** through social media..."
-"...thanked **participants** for their time..."
-
-Insight: "participants" most commonly appears in methodological contexts (78% of occurrences).""",
-            "category": "Text Analysis > Word Frequency & Patterns",
-            "tags": ["frequency", "corpus-analysis", "text-mining", "keywords"],
-            "source": "Custom"
-        },
-        {
-            "title": "Collocation and Co-occurrence Analysis",
-            "prompt_text": """Identify meaningful word collocations and co-occurrence patterns.
+            "title": "Word Frequency Analysis",
+            "prompt_text": """Analyze word frequencies in corpus.
 
 Text: {corpus}
-Target Word: {keyword}
-Window Size: {window} words
+Size: {n_words} words
 
-Analyze:
-1. Words most frequently co-occurring with target word
-2. Statistical significance of collocations (PMI, t-score, log-likelihood)
-3. Semantic domains of collocates
-4. Positional preferences (before/after target)
-5. Comparison across different document types/time periods
+Generate: Top 30 words, top 20 bigrams, top 10 trigrams (exclude stopwords).
 
 ---EXAMPLE---
 
-Example Analysis for target word "climate":
-Most Frequent Collocates (±5 words):
-1. change (PMI: 8.2, t-score: 45.6) - appears 89% of time
-2. crisis (PMI: 7.8, t-score: 32.1)
-3. global (PMI: 6.9, t-score: 28.4)
+Corpus: Research articles on climate change (n=50,000 words)
 
-Positional Analysis:
-Before "climate": global (45%), current (12%), changing (8%)
-After "climate": change (78%), crisis (15%), policy (7%)
+FREQUENCY ANALYSIS:
 
-Semantic Domains:
-- Environmental: change, warming, carbon (56%)
-- Political: policy, action, agreement (28%)
-- Scientific: data, research, models (16%)
+Top 30 Words:
+1. climate (n=892, 1.78%)
+2. change (n=834, 1.67%)
+3. temperature (n=456, 0.91%)
+4. emissions (n=398, 0.80%)
+5. carbon (n=367, 0.73%)
+6. global (n=334, 0.67%)
+7. warming (n=312, 0.62%)
+8. data (n=289, 0.58%)
+9. research (n=276, 0.55%)
+10. study (n=245, 0.49%)
+...(20 more)
 
-Temporal Change:
-2020: "climate change" (primary)
-2023: "climate crisis" (increasing usage, +45%)""",
+Top 20 Bigrams:
+1. "climate change" (n=567)
+2. "global warming" (n=234)
+3. "greenhouse gas" (n=198)
+4. "carbon emissions" (n=187)
+5. "temperature rise" (n=156)
+6. "sea level" (n=142)
+7. "climate model" (n=128)
+8. "fossil fuel" (n=119)
+9. "renewable energy" (n=107)
+10. "climate crisis" (n=98)
+...(10 more)
+
+Top 10 Trigrams:
+1. "greenhouse gas emissions" (n=89)
+2. "global temperature rise" (n=67)
+3. "renewable energy sources" (n=54)
+4. "climate change impacts" (n=48)
+5. "carbon dioxide levels" (n=43)
+6. "sea level rise" (n=41)
+7. "climate change mitigation" (n=38)
+8. "fossil fuel consumption" (n=35)
+9. "global climate model" (n=31)
+10. "extreme weather events" (n=29)
+
+INSIGHTS:
+- "Climate change" used 5.7x more than "global warming" (terminology shift)
+- Technical terms dominate (emissions, carbon, data)
+- Solution-oriented terms emerging (renewable energy, mitigation)
+- Zipf's law observed (frequency follows power law distribution)
+
+Contextual Usage (KWIC for "climate"):
+"...address **climate** change urgently..."
+"...predict future **climate** patterns..."
+"...global **climate** negotiations..."
+
+Most common context: policy/action (43%), science/research (38%), impacts (19%)""",
             "category": "Text Analysis > Word Frequency & Patterns",
-            "tags": ["collocation", "co-occurrence", "corpus-linguistics"],
+            "tags": ["frequency", "corpus-analysis", "text-mining"],
             "source": "Custom"
         },
         {
-            "title": "Linguistic Pattern Mining for Discourse Analysis",
-            "prompt_text": """Extract and analyze linguistic patterns for discourse analysis research.
+            "title": "Collocation Analysis",
+            "prompt_text": """Identify collocations (words that frequently appear together).
 
-Corpus: {corpus}
-Analysis Type: {type} (discourse markers/hedging/stance markers/metadiscourse)
-Research Question: {question}
+Corpus: {text}
+Target word: {keyword}
+Window: ±{n} words
 
-Identify:
-1. Discourse markers (however, therefore, in contrast)
-2. Hedging expressions (might, perhaps, possibly)
-3. Stance markers (clearly, obviously, unfortunately)
-4. Personal pronouns usage patterns
-5. Modal verbs distribution
-6. Sentence complexity metrics
+Provide: Top collocates, statistical significance, semantic patterns.
 
 ---EXAMPLE---
 
-Example Output:
-DISCOURSE MARKERS:
-Additive: and (n=156), furthermore (n=23), moreover (n=18)
-Adversative: however (n=45), but (n=134), nevertheless (n=12)
-Causal: therefore (n=34), thus (n=28), because (n=89)
+Corpus: News articles (1 million words)
+Target: "vaccine"
+Window: ±5 words
 
-HEDGING:
-Frequency: 12.3 hedges per 1000 words
-Most common: "may" (n=67), "possibly" (n=34), "suggest" (n=45)
-Context: 67% in discussion sections, 23% in results
+COLLOCATION ANALYSIS for "vaccine":
 
-STANCE:
-Certainty markers: "clearly" (n=23), "definitely" (n=12)
-Uncertainty markers: "perhaps" (n=34), "might" (n=56)
-Ratio: Uncertainty:Certainty = 2.6:1
+Top 10 Collocates (statistical strength):
+1. "COVID" (PMI: 9.2, t-score: 67.3) - appears 89% of time
+2. "efficacy" (PMI: 8.7, t-score: 45.1) - appears 67% of time
+3. "doses" (PMI: 8.1, t-score: 38.9)
+4. "rollout" (PMI: 7.9, t-score: 34.2)
+5. "mandate" (PMI: 7.6, t-score: 29.8)
+6. "hesitancy" (PMI: 7.4, t-score: 27.5)
+7. "approval" (PMI: 7.1, t-score: 25.3)
+8. "Pfizer" (PMI: 6.9, t-score: 23.1)
+9. "booster" (PMI: 6.7, t-score: 21.8)
+10. "trial" (PMI: 6.4, t-score: 19.4)
 
-Interpretation:
-High hedging frequency suggests cautious academic tone. Uncertainty markers dominate, typical of empirical social science writing.""",
+Positional Preferences:
+Before "vaccine": COVID (52%), new (18%), approved (12%)
+After "vaccine": doses (34%), rollout (28%), efficacy (21%)
+
+Semantic Clusters:
+1. Policy/Distribution: rollout, mandate, doses (38%)
+2. Scientific: efficacy, trial, approval (31%)
+3. Brands: Pfizer, Moderna, J&J (18%)
+4. Social: hesitancy, misinformation (13%)
+
+Temporal Trends:
+2020-2021: "trial", "development" dominant
+2022-2023: "booster", "mandate" increasing
+
+Example Sentences:
+"The **COVID vaccine** rollout begins next week"
+"**Vaccine efficacy** data shows 95% protection"
+"New **vaccine mandates** announced for healthcare workers"
+
+Insight: Discourse shifted from development phase to implementation and public health policy.""",
             "category": "Text Analysis > Word Frequency & Patterns",
-            "tags": ["discourse-analysis", "linguistic-patterns", "corpus-linguistics"],
+            "tags": ["collocation", "corpus-linguistics", "text-patterns"],
             "source": "Custom"
         },
         
         # ============================================
-        # 7. ACADEMIC WRITING
+        # 4. ACADEMIC WRITING
         # ============================================
         
+        # Literature Review (2 prompts)
         {
-            "title": "Literature Review Section Generator",
-            "prompt_text": """Generate a comprehensive literature review section for an academic paper.
+            "title": "Literature Review Section Writer",
+            "prompt_text": """Write a literature review section on: {topic}
 
-Topic: {research_topic}
-Key Studies: {study_list}
-Theoretical Framework: {framework}
-Target Length: {words} words
-Citation Style: APA 7th edition
+Key studies: {study_list}
+Themes: {themes}
+Word count: {words}
 
-Structure the review with:
-1. Opening paragraph: Importance of topic and scope of review
-2. Thematic organization (3-5 themes)
-3. For each theme:
-   - Overview of research
-   - Key findings synthesis
-   - Methodological approaches
-   - Debates/contradictions
-   - Chronological development
-4. Theoretical framework integration
-5. Research gaps identification
-6. Transition to current study
-
-Writing guidelines:
-- Use past tense for specific studies ("Smith (2020) found...")
-- Use present tense for established knowledge ("Research shows...")
-- Provide critical analysis, not just summary
-- Integrate citations smoothly
-- Maintain logical flow between paragraphs
+Structure: Opening, thematic organization, gaps, transition to current study.
 
 ---EXAMPLE---
 
-Example Opening:
-"The relationship between social media use and mental health among adolescents has garnered significant attention in recent years, with researchers examining various dimensions of this complex association (Author1, 2022; Author2, 2023). This literature review synthesizes current evidence on [scope], organizing findings around three key themes: passive versus active use, age-related vulnerabilities, and protective factors..."
+Topic: Social media and adolescent mental health
+Studies: 5 key papers
+Themes: Usage patterns, mechanisms, moderators
+Words: 500
 
-Generate full review with proper citations and transitions.""",
+LITERATURE REVIEW:
+
+The relationship between social media use and adolescent mental health has garnered substantial research attention in recent years, with scholars examining multiple dimensions of this complex association (Twenge & Campbell, 2022; Odgers & Jensen, 2020). This review synthesizes current evidence, organizing findings around three key themes: usage patterns, underlying mechanisms, and moderating factors.
+
+Usage Patterns and Mental Health Outcomes
+
+Research distinguishes between passive consumption (scrolling without engaging) and active use (posting, commenting), with differential effects on wellbeing. Verduyn et al. (2021) found that passive Facebook use predicted decreased wellbeing, while active use showed no such relationship. Similarly, Escobar-Viera et al. (2022) reported that passive Instagram scrolling correlated with depressive symptoms (r=.31, p<.001), whereas active engagement did not. These findings align with earlier work by Shakya and Christakis (2017), who demonstrated that clicking "likes" predicted worse mental health outcomes than direct social interaction online.
+
+Psychological Mechanisms
+
+Social comparison theory provides the predominant explanatory framework for observed effects (Vogel et al., 2021). Longitudinal evidence indicates that upward social comparison—comparing oneself unfavorably to idealized online presentations—mediates the relationship between passive social media use and depression (Burnell et al., 2022). Additionally, fear of missing out (FOMO) has emerged as a significant pathway, with Franchina et al. (2020) finding that FOMO partially explained the link between social media intensity and anxiety.
+
+Moderating Factors
+
+Effects vary considerably across demographic and individual difference variables. Age appears critical, with younger adolescents (ages 13-15) showing greater vulnerability than older teens (Nesi et al., 2021). Gender differences are consistently reported, with girls experiencing more negative impacts than boys, potentially due to higher engagement with appearance-focused platforms (Kelly et al., 2022). Individual factors such as self-esteem and pre-existing mental health conditions also moderate outcomes.
+
+Research Gaps and Current Study
+
+Despite these advances, several limitations warrant attention. Most studies rely on cross-sectional designs, limiting causal inference. Few investigations examine mechanisms beyond social comparison. Additionally, the rapid evolution of platforms means findings may not generalize across contexts. The current study addresses these gaps by employing a longitudinal design, testing multiple mediating pathways, and examining effects across diverse platforms.
+
+[Word count: 498]""",
             "category": "Academic Writing > Literature Review",
             "tags": ["literature-review", "academic-writing", "research-paper"],
             "source": "Custom"
         },
         {
-            "title": "Research Paper Abstract Generator",
-            "prompt_text": """Create a structured abstract for submission to {journal_name}.
+            "title": "Research Gap Identifier",
+            "prompt_text": """Identify research gaps in this literature on: {topic}
 
-Paper Details:
-- Research Question: {question}
-- Method: {method}
-- Sample: {sample}
-- Key Findings: {findings}
-- Implications: {implications}
+Review: {literature_summary}
 
-Abstract Requirements:
-- Word limit: {limit} words
-- Structure: Background, Methods, Results, Conclusions
-- Keywords: {keywords}
-
-Generate an abstract following journal guidelines:
-
-Background (2-3 sentences): Research context and gap
-Methods (2-3 sentences): Design, sample, measures
-Results (3-4 sentences): Key findings with statistics
-Conclusions (2-3 sentences): Implications and significance
+List: 5-7 specific gaps with justification and suggested next steps.
 
 ---EXAMPLE---
 
-Example:
-Background: Despite extensive research on social media effects, the mechanisms linking passive scrolling to mental health outcomes remain unclear. This study examined the mediating role of social comparison in the relationship between passive social media use and depressive symptoms.
+Topic: Remote work productivity
+Literature: 15 studies reviewed (2019-2023)
 
-Methods: A longitudinal survey of 1,247 adolescents (ages 13-17) was conducted over 2 years. Participants completed measures of social media use patterns, social comparison tendencies, and depressive symptoms at three time points.
+RESEARCH GAPS IDENTIFIED:
 
-Results: Structural equation modeling revealed that passive scrolling predicted increased depressive symptoms (β=.23, p<.001), with social comparison fully mediating this relationship (indirect effect=.15, 95% CI [.11, .19]). Active engagement showed no association with negative outcomes. Effects were stronger for females and younger adolescents.
+Gap 1: Longitudinal Effects Beyond 2 Years
+Current state: Most studies examine short-term effects (3-12 months)
+Evidence: Only 2 of 15 studies exceed 18-month follow-up
+Why it matters: Productivity effects may change as remote work becomes normalized
+Suggested study: 5-year panel study tracking same workers across transition
 
-Conclusions: Social comparison processes explain why passive social media use relates to poor mental health. Interventions should focus on reducing upward social comparisons rather than limiting overall social media time.
+Gap 2: Non-Knowledge Workers Underrepresented
+Current state: 87% of studies focus on office/knowledge workers
+Missing: Manufacturing supervisors, healthcare admin, retail management
+Why it matters: Generalizability limited; different job types may show different patterns
+Suggested study: Comparative study across job sectors
 
-Keywords: social media, adolescents, mental health, social comparison, longitudinal""",
+Gap 3: Mental Health as Mediator Understudied
+Current state: Only 3 studies examine psychological mechanisms
+Evidence: Productivity often measured without considering wellbeing pathways
+Why it matters: May miss important explanatory variables (burnout, work-life conflict)
+Suggested study: Mediation analysis with mental health indicators
+
+Gap 4: Experimental Designs Absent
+Current state: All 15 studies are correlational/observational
+Limitation: Cannot establish causation
+Why it matters: Policy decisions require stronger causal evidence
+Suggested study: Randomized trial with matched control group
+
+Gap 5: Cultural Context Neglected
+Current state: 93% of studies from US/Western Europe
+Missing: Asia, Africa, Latin America perspectives
+Why it matters: Cultural norms around work may moderate effects
+Suggested study: Cross-cultural comparison study
+
+Gap 6: Team-Level Outcomes Overlooked
+Current state: Focus almost exclusively on individual productivity
+Missing: Team cohesion, collaboration quality, innovation
+Why it matters: Remote work impacts group processes differently
+Suggested study: Multi-level analysis (individual + team outcomes)
+
+Gap 7: Technology Infrastructure Assumed
+Current state: Studies assume reliable internet, equipment access
+Reality: Digital divide may affect who can work remotely productively
+Why it matters: Equity concerns, sample bias
+Suggested study: Stratified analysis by technology access levels
+
+PRIORITY RANKING:
+High Priority: Gaps 1, 4, 6 (methodological improvements needed)
+Medium Priority: Gaps 2, 5 (generalizability concerns)
+Lower Priority: Gaps 3, 7 (important but can build on existing frameworks)
+
+Recommendation: Address Gap 1 (longitudinal) + Gap 4 (experimental) in next study to provide strongest evidence base for policy.""",
+            "category": "Academic Writing > Literature Review",
+            "tags": ["research-gaps", "literature-review", "academic"],
+            "source": "Custom"
+        },
+        
+        # Research Papers (2 prompts)
+        {
+            "title": "Abstract Generator (Structured)",
+            "prompt_text": """Create a structured abstract for: {study_title}
+
+Study details:
+- Research question: {RQ}
+- Method: {method}
+- Sample: {sample}
+- Key findings: {findings}
+- Implications: {implications}
+
+Format: Background, Methods, Results, Conclusions (250 words max).
+
+---EXAMPLE---
+
+Study: Social Media Use and Sleep Quality in College Students
+
+RQ: Does evening social media use predict poor sleep quality?
+Method: Survey + 7-day sleep diary
+Sample: 342 undergraduates, ages 18-22
+Findings: Evening use (9pm-midnight) linked to 45-min later sleep onset, lower quality
+Implications: Targeted interventions needed
+
+ABSTRACT:
+
+Background: Social media use among college students is ubiquitous, yet its effects on sleep remain poorly understood. This study examined whether evening social media engagement predicts sleep onset latency and subjective sleep quality.
+
+Methods: A sample of 342 undergraduate students (M age=19.7, SD=1.2; 68% female) completed baseline surveys assessing social media habits and demographics, followed by 7-day sleep diaries documenting nightly social media use, sleep onset time, and sleep quality ratings. Linear mixed models tested associations between evening social media use (9pm-midnight) and sleep outcomes, controlling for caffeine intake and baseline sleep patterns.
+
+Results: Evening social media use significantly predicted later sleep onset (β=6.3 min per 30-min use, p<.001) and lower sleep quality (β=-.28, p<.001). Students using social media for 90+ minutes after 9pm experienced sleep onset delays averaging 45 minutes compared to minimal users. Effects were strongest for interactive platforms (Instagram, TikTok) versus passive consumption (YouTube). Academic performance concerns partially mediated the relationship (indirect effect=.12, 95% CI [.07, .18]).
+
+Conclusions: Evening social media use substantially disrupts college student sleep patterns, with implications for academic performance and wellbeing. Interventions targeting specific platforms and time windows may prove more effective than generic "screen time" recommendations. Universities should consider incorporating sleep hygiene education that addresses social media use specifically.
+
+Keywords: social media, sleep quality, college students, screen time, wellbeing
+
+[Word count: 248]""",
             "category": "Academic Writing > Research Papers",
             "tags": ["abstract", "academic-writing", "publication"],
             "source": "Custom"
         },
         {
-            "title": "Research Report Executive Summary",
-            "prompt_text": """Create an executive summary for a research report aimed at policymakers/practitioners.
+            "title": "Methods Section Writer",
+            "prompt_text": """Write the Methods section for this study.
 
-Report Details:
-- Study Title: {title}
-- Commissioner: {organization}
-- Key Findings: {findings_list}
-- Recommendations: {recommendations}
-- Target Audience: {audience}
+Study type: {design}
+Participants: {sample_details}
+Measures: {measures_list}
+Procedure: {procedure}
+Analysis: {analysis_plan}
 
-Executive Summary Requirements:
-- Length: 2 pages maximum
-- Avoid jargon
-- Use active voice
-- Include visuals/data points
-- Actionable recommendations
-
-Structure:
-1. Context & Purpose (1 paragraph)
-2. What We Did (1 paragraph - methodology in plain language)
-3. What We Found (3-5 key findings with data)
-4. What It Means (implications)
-5. What You Should Do (3-5 actionable recommendations)
+Include: Participants, measures, procedure, analysis (APA style).
 
 ---EXAMPLE---
 
-Example:
-**EXECUTIVE SUMMARY: Impact of Remote Work on Employee Wellbeing**
+Design: Cross-sectional survey
+Participants: 500 adults, online recruitment, age 25-65
+Measures: Remote work experience scale, work-life balance inventory, burnout measure
+Procedure: Online survey via Qualtrics, 20 minutes
+Analysis: Correlations, multiple regression
 
-**Why This Matters**
-With 60% of knowledge workers now in hybrid arrangements, understanding remote work's effects on wellbeing is critical for organizational policy.
+METHODS SECTION:
 
-**What We Did**
-We surveyed 2,500 employees across 15 organizations and conducted 60 in-depth interviews between January-June 2024.
+Participants
 
-**Key Findings**
-• Remote workers report 27% higher work-life balance satisfaction
-• However, 42% experience increased isolation
-• Productivity remains stable, but innovation decreased 15%
-• Mental health outcomes depend heavily on manager support
+A total of 500 adults (M age = 42.3, SD = 11.2; 52% female, 47% male, 1% non-binary) were recruited through Prolific, an online crowdsourcing platform. Inclusion criteria required participants to: (a) be currently employed full-time, (b) have remote work experience of at least 6 months, and (c) reside in the United States. The sample was racially diverse (68% White, 14% Black, 10% Hispanic, 5% Asian, 3% other) and represented various industries (technology 28%, education 19%, healthcare 15%, finance 12%, other 26%). Participants were compensated $4.50 for their time.
 
-**Implications**
-Remote work is not uniformly positive or negative—success depends on implementation quality and individual circumstances.
+Measures
 
-**Recommendations**
-1. Mandate 2-3 in-person collaboration days monthly
-2. Train managers in remote leadership practices
-3. Provide dedicated home office stipends
-4. Create virtual social connection opportunities
-5. Monitor isolation indicators quarterly
+Remote Work Experience Scale (RWES; Gajendran & Harrison, 2021). This 8-item measure assesses frequency and intensity of remote work (e.g., "I work remotely ___ days per week"). Items use 5-point scales, with higher scores indicating greater remote work intensity. The scale demonstrates good internal consistency (α = .87 in validation sample; α = .89 in current study).
 
-Use clear headings, bullet points, and data callouts.""",
+Work-Life Balance Inventory (WLBI; Fisher et al., 2019). The WLBI consists of 12 items measuring perceived balance between work and personal life domains (e.g., "I maintain healthy boundaries between work and home"). Responses range from 1 (strongly disagree) to 7 (strongly agree). Internal consistency was excellent (α = .92).
+
+Maslach Burnout Inventory (MBI; Maslach & Jackson, 1981). We administered the 22-item MBI assessing three dimensions: emotional exhaustion (9 items), depersonalization (5 items), and personal accomplishment (8 items). The MBI is widely used and psychometrically sound (α = .88-.94 across subscales in current study).
+
+Demographic Variables. Participants reported age, gender, race/ethnicity, industry, and years of remote work experience.
+
+Procedure
+
+Following institutional review board approval, participants accessed the study via a Qualtrics link distributed through Prolific. After providing informed consent, participants completed the measures in counterbalanced order to control for potential order effects. The survey required approximately 20 minutes. Attention check items (n = 3) were embedded throughout; participants failing 2+ checks were excluded (n = 23, 4.4% of initial sample), resulting in the final sample of 500.
+
+Data Analysis
+
+Descriptive statistics and bivariate correlations were computed using SPSS 28.0. Hierarchical multiple regression tested whether remote work intensity predicted burnout dimensions beyond demographic controls. Model 1 included age, gender, and industry; Model 2 added remote work intensity; Model 3 added work-life balance to test mediation. Assumptions were evaluated and met: linearity (scatterplot inspection), homoscedasticity (Breusch-Pagan test, p = .23), multicollinearity (VIF < 2.1 for all predictors), and normality of residuals (Shapiro-Wilk test, p = .19). Alpha was set at .05 for all tests.
+
+[Formatted in APA 7th edition style]""",
+            "category": "Academic Writing > Research Papers",
+            "tags": ["methods", "academic-writing", "apa-style"],
+            "source": "Custom"
+        },
+        
+        # Reports & Presentations (1 prompt)
+        {
+            "title": "Executive Summary Generator",
+            "prompt_text": """Create an executive summary for report: {report_title}
+
+Key findings: {findings}
+Recommendations: {recommendations}
+Target audience: {audience}
+
+Length: 1-2 pages, no jargon, action-oriented.
+
+---EXAMPLE---
+
+Report: Employee Engagement Survey Results 2024
+Findings: Engagement down 12%, top issues are workload, communication, growth opportunities
+Recommendations: Reduce meeting time, improve manager training, create career pathways
+Audience: C-suite executives
+
+EXECUTIVE SUMMARY: Employee Engagement Survey 2024
+
+Key Findings
+
+Our annual engagement survey reveals a concerning 12-percentage-point decline in overall employee engagement (from 73% to 61%), the lowest in five years. This decline affects retention, productivity, and organizational culture.
+
+Three Critical Issues Identified:
+
+1. Workload Intensity (flagged by 68% of employees)
+Employees report working 8+ hours beyond contracted time weekly. Meeting overload is the primary culprit, with staff spending average 18 hours/week in meetings—up from 12 hours in 2023.
+
+Impact: 34% of respondents actively considering leaving due to unsustainable workload.
+
+2. Communication Breakdown (58% dissatisfied)
+Information silos between departments are worsening. 71% report learning about major decisions "through the grapevine" rather than official channels. Manager communication quality rated 4.2/10 (down from 6.8/10 in 2023).
+
+Impact: Decreased trust in leadership, slower decision-making, duplicated efforts.
+
+3. Limited Growth Opportunities (52% see no clear path)
+Career advancement feels opaque. Only 23% understand promotion criteria. Internal mobility stagnated—just 8% of positions filled internally vs. 34% external hires.
+
+Impact: Top talent seeking external opportunities, loss of institutional knowledge.
+
+Urgent Recommendations
+
+We recommend four immediate actions to reverse this trend:
+
+1. Reduce Meeting Load (Target: 30% reduction)
+   - Implement "No Meeting Fridays"
+   - Require meeting agendas; cancel without clear purpose
+   - Default to 25-minute (not 30) and 50-minute (not 60) meetings
+   - Expected impact: 5+ hours returned to employees weekly
+
+2. Strengthen Manager Capabilities (Start Q2 2024)
+   - Mandatory communication training for all managers
+   - Monthly skip-level meetings for transparency
+   - Manager effectiveness tied to 360 feedback
+   - Expected impact: Communication scores improve to 7/10 within 6 months
+
+3. Create Transparent Career Pathways (Launch Q2 2024)
+   - Publish competency frameworks for all role levels
+   - Quarterly "career conversation" between employees and managers
+   - Internal candidate preference policy (interview all qualified internals)
+   - Expected impact: 50% of positions filled internally by Q4 2024
+
+4. Quick Wins for Morale (Immediate)
+   - Recognize high performers publicly (monthly awards)
+   - Flexible work arrangements formalized
+   - Mental health days added to PTO
+   - Expected impact: Visible commitment to employee wellbeing
+
+Cost-Benefit Analysis
+
+Inaction costs: Conservative estimate of $2.4M annually (recruitment, training, lost productivity from 34% potential attrition).
+
+Investment required: $180K (training programs, internal mobility platform).
+
+ROI: 13:1 if we retain even 15% of at-risk employees.
+
+Next Steps
+
+We propose forming a cross-functional task force by March 1st to implement these recommendations. Monthly progress reports will track metrics: engagement scores, meeting hours, internal mobility rates, and voluntary turnover.
+
+The window for intervention is narrow. Addressing these issues now protects our talent, culture, and bottom line.
+
+Contact: People Analytics Team | engagement@company.com
+
+[Format: Clear headers, bullet points, data callouts, action-oriented language]""",
             "category": "Academic Writing > Reports & Presentations",
-            "tags": ["executive-summary", "policy", "research-report"],
+            "tags": ["executive-summary", "report", "business-writing"],
             "source": "Custom"
         },
         
         # ============================================
-        # 8. ADVANCED METHODS
+        # 5. ADVANCED METHODS
         # ============================================
         
+        # Model Fine-tuning (1 prompt)
         {
-            "title": "LLM Fine-Tuning Data Preparation Guide",
-            "prompt_text": """Guide me through preparing a dataset for fine-tuning an LLM for {specific_task}.
+            "title": "LLM Fine-tuning Data Prep Guide",
+            "prompt_text": """Guide me in preparing data to fine-tune an LLM for: {task}
 
-Task: {task_description}
-Current Data: {data_description}
-Target Model: {model_name}
-Expected Output: {desired_output_format}
+Current data: {data_description}
+Target model: {model}
+Goal: {objective}
 
-Provide step-by-step guidance:
-1. Data requirements assessment
-   - Minimum dataset size for task type
-   - Quality over quantity considerations
-   - Diversity requirements
-
-2. Data formatting
-   - Input-output pair structure
-   - JSON/JSONL format
-   - Example formatted entries
-
-3. Data quality checks
-   - Consistency verification
-   - Label quality assessment
-   - Balanced representation
-
-4. Train/validation/test split strategy
-   - Recommended split ratios
-   - Stratification approach
-
-5. Fine-tuning parameters
-   - Learning rate recommendations
-   - Batch size
-   - Number of epochs
-   - Evaluation metrics
+Provide: Data requirements, formatting, quality checks, split strategy.
 
 ---EXAMPLE---
 
-Example Output:
-**Task: Sentiment Classification of Academic Paper Reviews**
+Task: Classify research paper abstracts by methodology (qualitative/quantitative/mixed)
+Data: 500 labeled abstracts
+Model: GPT-3.5
+Goal: 90%+ accuracy on new abstracts
 
-**Data Requirements:**
-- Minimum: 500-1000 labeled examples
-- Recommended: 2000+ for robust performance
-- Need balanced positive/negative/neutral examples
+FINE-TUNING DATA PREPARATION GUIDE:
 
-**Format Example:**
-```json
-{"prompt": "Review: This paper makes a significant contribution...\\n\\nSentiment:", "completion": " Positive"}
-{"prompt": "Review: The methodology is flawed and...\\n\\nSentiment:", "completion": " Negative"}
+1. Data Requirements Assessment
+
+Minimum: 500-1000 examples for classification task ✓ (you have 500)
+Recommended: 2000+ for robust performance
+Quality > Quantity: Ensure clean labels
+
+Your data status: MARGINAL - consider collecting 500 more examples
+
+2. Data Format (OpenAI Fine-tuning)
+
+Convert to JSONL (JSON Lines) format:
+
+{"messages": [{"role": "system", "content": "Classify research methodology"}, {"role": "user", "content": "Abstract: This study used semi-structured interviews..."}, {"role": "assistant", "content": "Qualitative"}]}
+{"messages": [{"role": "system", "content": "Classify research methodology"}, {"role": "user", "content": "Abstract: We conducted a randomized controlled trial..."}, {"role": "assistant", "content": "Quantitative"}]}
+
+System prompt: Keep consistent across all examples
+User message: "Abstract: {abstract_text}"
+Assistant response: One word - "Qualitative" or "Quantitative" or "Mixed"
+
+3. Data Quality Checks
+
+Run these validations:
+
+✓ Label consistency:
+  - Check for typos (e.g., "Qualatative" vs "Qualitative")
+  - Standardize capitalization
+  - Verify only three classes used
+
+✓ Length distribution:
+  - Abstracts should be 100-300 words
+  - Remove outliers (very short/long)
+  - OpenAI limit: 8192 tokens total per example
+
+✓ Class balance:
+  Count per class:
+  - Qualitative: 180 (36%)
+  - Quantitative: 240 (48%)
+  - Mixed: 80 (16%)
+  
+  ⚠️ Mixed methods underrepresented - collect 70 more examples
+
+✓ Ambiguous cases:
+  - Manually review borderline cases (qual + stats)
+  - Consider creating "Mixed" subcategories if needed
+  - Inter-rater reliability check (if multiple labelers)
+
+4. Train/Validation/Test Split
+
+Recommended split:
+- Training: 70% (350 examples)
+- Validation: 15% (75 examples)
+- Test: 15% (75 examples)
+
+Stratification: Ensure class distribution equal across splits
+
+Python code:
+```python
+from sklearn.model_selection import train_test_split
+
+# First split: separate test set
+train_val, test = train_test_split(
+    data, test_size=0.15, stratify=data['label'], random_state=42
+)
+
+# Second split: separate validation
+train, val = train_test_split(
+    train_val, test_size=0.176, stratify=train_val['label'], random_state=42
+)  # 0.176 * 0.85 ≈ 0.15 of total
+
+print(f"Train: {len(train)}, Val: {len(val)}, Test: {len(test)}")
 ```
 
-**Quality Checks:**
-- Ensure consistent labeling (inter-rater reliability >0.8)
-- Remove duplicates
-- Verify completion token consistency
+5. Fine-tuning Parameters (OpenAI GPT-3.5)
 
-**Split Strategy:**
-- Train: 70% (1400 examples)
-- Validation: 15% (300 examples)  
-- Test: 15% (300 examples)
-- Stratify by sentiment class
+Based on your dataset size:
 
-**Fine-tuning Settings (OpenAI GPT-3.5):**
-- Learning rate: 0.1
-- Batch size: 8
-- Epochs: 4
-- Evaluate on validation set each epoch
+- **Learning rate**: 0.1 (default for small datasets)
+- **Batch size**: 4-8 (start with 4)
+- **Epochs**: 3-4 (monitor validation loss)
+- **Evaluation**: After each epoch on validation set
 
-Provide Python code for data preparation pipeline.""",
+Cost estimate: ~$2-5 for 350 training examples (GPT-3.5)
+
+6. Validation Strategy
+
+After fine-tuning, test on validation set:
+
+Expected results:
+- Baseline (no fine-tuning): ~60-70% accuracy
+- After fine-tuning: Target 85-92% accuracy
+
+If accuracy < 85%:
+1. Check for mislabeled examples
+2. Increase dataset to 1000+ examples
+3. Try 1-2 more epochs
+4. Review confused classes (e.g., mixed vs qualitative)
+
+7. Final Quality Check
+
+Before deployment:
+✓ Test on held-out test set (75 examples)
+✓ Manual review of misclassifications
+✓ Edge case testing (very short abstracts, jargon-heavy)
+✓ Consistency check (same input → same output?)
+
+Success criteria: ≥90% accuracy on test set
+
+8. Deployment Checklist
+
+□ Model ID saved
+□ System prompt documented
+□ Error handling implemented
+□ Fallback for low-confidence predictions
+□ Monitoring plan (track accuracy over time)
+
+NEXT STEPS:
+1. Collect 70 more "Mixed methods" examples (balance dataset)
+2. Format all 570 examples as JSONL
+3. Run quality checks (script provided above)
+4. Upload to OpenAI and start fine-tuning job
+5. Validate on test set
+6. Deploy if accuracy ≥90%
+
+Timeline: 2-3 days (data prep: 1 day, fine-tuning: 2-4 hours, validation: 4 hours)
+
+[Complete, actionable guidance ready for implementation]""",
             "category": "Advanced Methods > Model Fine-tuning",
             "tags": ["llm", "fine-tuning", "machine-learning", "ai"],
             "source": "Custom"
         },
+        
+        # Custom API Integration (1 prompt)
         {
-            "title": "API Integration Workflow for Research Automation",
-            "prompt_text": """Design a custom API integration workflow to automate {research_task}.
+            "title": "Research Workflow API Automation",
+            "prompt_text": """Design an API workflow to automate: {research_task}
 
-Task: {task_description}
-Data Sources: {api_list}
-Frequency: {frequency}
-Output Needed: {output_format}
+Data sources: {apis}
+Frequency: {schedule}
+Output: {desired_output}
 
-Create a comprehensive integration plan:
-
-1. **API Selection & Authentication**
-   - List required APIs
-   - Authentication methods for each
-   - Rate limits and pricing considerations
-   - Fallback options if APIs fail
-
-2. **Data Flow Architecture**
-   - Step-by-step data pipeline
-   - Error handling at each stage
-   - Data validation checkpoints
-   - Storage strategy
-
-3. **Implementation Code**
-   - Python script with error handling
-   - Configuration file template
-   - Logging strategy
-   - Scheduling (cron job/Airflow)
-
-4. **Data Quality Assurance**
-   - Automated checks
-   - Alerting for failures
-   - Manual review triggers
-
-5. **Documentation**
-   - API credentials setup
-   - Running the pipeline
-   - Troubleshooting guide
+Provide: Architecture, API calls, error handling, code.
 
 ---EXAMPLE---
 
-Example Workflow: Automated Social Media Monitoring
+Task: Daily tracking of news mentions about "climate policy"
+APIs: NewsAPI, OpenAI (sentiment analysis)
+Schedule: Every morning at 6 AM
+Output: Email summary with article links, sentiment, key quotes
 
-**Goal:** Collect daily Twitter mentions of research keywords, analyze sentiment, store in database.
+AUTOMATED RESEARCH WORKFLOW:
 
-**APIs Needed:**
-1. Twitter API v2 (Academic Research access)
-2. OpenAI API (sentiment analysis)
-3. PostgreSQL database
-
-**Data Flow:**
+System Architecture:
 ```
-Twitter API → Raw tweets → Clean/preprocess → Sentiment API → 
-Structured data → PostgreSQL → Daily summary email
+NewsAPI → Fetch articles → Filter relevant → OpenAI sentiment analysis → 
+Store in database → Generate summary → Email report
 ```
 
-**Python Implementation:**
+1. API Requirements
+
+NewsAPI:
+- Endpoint: /v2/everything
+- Authentication: API key (free tier: 100 requests/day)
+- Rate limit: 1 request/second
+
+OpenAI API:
+- Model: GPT-3.5-turbo
+- Purpose: Sentiment analysis + quote extraction
+- Cost: ~$0.002 per article
+
+Email:
+- SMTP (Gmail) or SendGrid API
+- Authentication: App password
+
+2. Implementation (Python)
+
 ```python
-import tweepy
-import openai
-import psycopg2
+import requests
+from openai import OpenAI
+import smtplib
+from email.mime.text import MIMEText
 from datetime import datetime, timedelta
+import time
+import sqlite3
 
 # Configuration
-KEYWORDS = ["climate change", "global warming"]
-TWEET_LIMIT = 1000
+NEWS_API_KEY = "your_key_here"
+OPENAI_API_KEY = "your_key_here"
+EMAIL_TO = "researcher@university.edu"
 
-# Step 1: Fetch tweets
-# Step 2: Clean data
-# Step 3: Sentiment analysis
-# Step 4: Store results
-# Step 5: Generate report
+# Initialize APIs
+client = OpenAI(api_key=OPENAI_API_KEY)
 
-# Error handling and logging throughout
+def fetch_news_articles():
+    \"\"\"Fetch articles from NewsAPI\"\"\"
+    yesterday = (datetime.now() - timedelta(days=1)).strftime('%Y-%m-%d')
+    
+    url = "https://newsapi.org/v2/everything"
+    params = {
+        'q': 'climate policy',
+        'from': yesterday,
+        'language': 'en',
+        'sortBy': 'relevancy',
+        'pageSize': 20,
+        'apiKey': NEWS_API_KEY
+    }
+    
+    try:
+        response = requests.get(url, params=params)
+        response.raise_for_status()
+        articles = response.json()['articles']
+        print(f"✓ Fetched {len(articles)} articles")
+        return articles
+    except requests.exceptions.RequestException as e:
+        print(f"✗ NewsAPI error: {e}")
+        return []
+
+def analyze_sentiment(article_text):
+    \"\"\"Analyze sentiment using OpenAI\"\"\"
+    prompt = f\"\"\"Analyze sentiment of this news article about climate policy.
+    
+Article: {article_text[:500]}...
+
+Provide:
+1. Sentiment: Positive/Negative/Neutral
+2. Confidence: 0-100%
+3. Key quote (one sentence)
+
+Format: JSON\"\"\"
+
+    try:
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3
+        )
+        return response.choices[0].message.content
+    except Exception as e:
+        print(f"✗ OpenAI error: {e}")
+        return None
+
+def store_in_database(article_data):
+    \"\"\"Store results in SQLite\"\"\"
+    conn = sqlite3.connect('climate_research.db')
+    cursor = conn.cursor()
+    
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS articles (
+            id INTEGER PRIMARY KEY,
+            title TEXT,
+            url TEXT,
+            sentiment TEXT,
+            confidence REAL,
+            key_quote TEXT,
+            date TEXT
+        )
+    ''')
+    
+    cursor.execute('''
+        INSERT INTO articles (title, url, sentiment, confidence, key_quote, date)
+        VALUES (?, ?, ?, ?, ?, ?)
+    ''', article_data)
+    
+    conn.commit()
+    conn.close()
+
+def send_email_report(summary_html):
+    \"\"\"Send email summary\"\"\"
+    msg = MIMEText(summary_html, 'html')
+    msg['Subject'] = f"Climate Policy News Summary - {datetime.now().strftime('%Y-%m-%d')}"
+    msg['From'] = "researcher@university.edu"
+    msg['To'] = EMAIL_TO
+    
+    try:
+        with smtplib.SMTP('smtp.gmail.com', 587) as server:
+            server.starttls()
+            server.login("your_email@gmail.com", "app_password")
+            server.send_message(msg)
+        print("✓ Email sent successfully")
+    except Exception as e:
+        print(f"✗ Email error: {e}")
+
+def main():
+     \"\"\"Main workflow\"\"\"
+    print(f"Starting climate policy tracker - {datetime.now()}")
+    
+    # Step 1: Fetch articles
+    articles = fetch_news_articles()
+    if not articles:
+        print("No articles found. Exiting.")
+        return
+    
+    # Step 2: Analyze each article
+    results = []
+    for i, article in enumerate(articles, 1):
+        print(f"Processing article {i}/{len(articles)}...")
+        
+        # Combine title + description
+        text = f"{article['title']}. {article.get('description', '')}"
+        
+        # Analyze sentiment
+        analysis = analyze_sentiment(text)
+        
+        if analysis:
+            results.append({
+                'title': article['title'],
+                'url': article['url'],
+                'analysis': analysis,
+                'source': article['source']['name']
+            })
+            
+            # Store in database
+            # (parse analysis and store - simplified here)
+        
+        # Rate limiting
+        time.sleep(1)
+    
+    # Step 3: Generate HTML summary
+    html = f\"\"\"
+    <html>
+    <body>
+    <h2>Climate Policy News - {datetime.now().strftime('%B %d, %Y')}</h2>
+    <p>Found {len(results)} relevant articles:</p>
+    <hr>
+    \"\"\"
+    
+    for r in results:
+        html += f\"\"\"
+        <h3><a href="{r['url']}">{r['title']}</a></h3>
+        <p><strong>Source:</strong> {r['source']}</p>
+        <p><strong>Analysis:</strong> {r['analysis']}</p>
+        <hr>
+        \"\"\"
+    
+    html += \"\"\"
+    </body>
+    </html>
+    \"\"\"
+    
+    # Step 4: Send email
+    send_email_report(html)
+    
+    print("✓ Workflow complete")
+
+if __name__ == "__main__":
+    main()
 ```
 
-**Monitoring:**
-- Daily email summary of new data
-- Alert if <100 tweets collected (anomaly)
-- Weekly data quality report
+3. Scheduling (Linux/Mac)
 
-Provide complete, production-ready code.""",
+Add to crontab:
+```bash
+# Run every day at 6 AM
+0 6 * * * /usr/bin/python3 /path/to/climate_tracker.py >> /path/to/log.txt 2>&1
+```
+
+Windows: Use Task Scheduler
+
+4. Error Handling Strategies
+
+- **API failures**: Retry 3 times with exponential backoff
+- **Rate limits**: Track requests, pause if approaching limit
+- **Data quality**: Validate JSON responses, skip malformed data
+- **Email failures**: Log locally, retry next day
+- **Database errors**: Backup before inserts
+
+5. Monitoring & Alerts
+
+Log to file:
+- Successful runs: article count, API costs
+- Failures: which API, error message, timestamp
+- Weekly summary: total articles, sentiment distribution
+
+Set alerts if:
+- Zero articles fetched (NewsAPI issue?)
+- OpenAI error rate >10%
+- Email not sent
+
+6. Cost Estimate
+
+Daily costs:
+- NewsAPI: Free (100 requests/day limit)
+- OpenAI: 20 articles × $0.002 = $0.04/day
+- Total: ~$1.20/month
+
+Optimizations:
+- Cache duplicate articles (check by URL)
+- Batch OpenAI requests to reduce overhead
+- Use GPT-3.5-turbo (cheaper than GPT-4)
+
+7. Extensions
+
+Possible additions:
+- Twitter API for real-time mentions
+- Store full article text (web scraping)
+- Trend analysis over time (sentiment shifts)
+- Alert on major policy announcements
+- Export to CSV for analysis
+
+RESULT:
+Fully automated research assistant that delivers daily climate policy insights to your inbox, costs <$2/month, runs unattended.
+
+[Production-ready code with error handling, monitoring, and cost optimization]""",
             "category": "Advanced Methods > Custom API Integration",
             "tags": ["api", "automation", "research-workflow", "python"],
             "source": "Custom"

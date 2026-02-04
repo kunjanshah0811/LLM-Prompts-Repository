@@ -1,8 +1,7 @@
 import { useState, useEffect } from 'react';
 
 const PromptModal = ({ prompt, onClose }) => {
-  const [copiedPrompt, setCopiedPrompt] = useState(false);
-  const [copiedAll, setCopiedAll] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -21,39 +20,65 @@ const PromptModal = ({ prompt, onClose }) => {
     return () => window.removeEventListener('keydown', handleEscape);
   }, [onClose]);
 
-  // Parse prompt into main and example sections
-  const parsePrompt = () => {
-    const text = prompt.prompt_text;
+  // Separate prompt from example/sample output
+  const separatePromptAndExample = (text) => {
+    if (!text) return { prompt: '', example: null };
+    
+    // First check for explicit ---EXAMPLE--- marker
     if (text.includes('---EXAMPLE---')) {
-      const [promptPart, examplePart] = text.split('---EXAMPLE---');
+      const parts = text.split('---EXAMPLE---');
       return {
-        prompt: promptPart.trim(),
-        example: examplePart.trim()
+        prompt: parts[0].trim(),
+        example: parts.length > 1 ? parts[1].trim() : null
       };
     }
+
+    // Fallback: look for common example markers
+    const markers = [
+      'Example:',
+      'Example Output:',
+      'Sample Output:',
+      'Sample Expected Output:',
+      'Example Input:',
+      'Sample Answer:',
+      'Example Analysis:',
+      'Example Classification:',
+      'Sample Example:'
+    ];
+
+    // Find the first occurrence of any marker
+    let splitIndex = -1;
+    let foundMarker = '';
+    
+    for (const marker of markers) {
+      const regex = new RegExp(`\\n${marker}`, 'i');
+      const match = text.match(regex);
+      if (match && (splitIndex === -1 || match.index < splitIndex)) {
+        splitIndex = match.index;
+        foundMarker = match[0];
+      }
+    }
+
+    if (splitIndex !== -1) {
+      return {
+        prompt: text.substring(0, splitIndex).trim(),
+        example: text.substring(splitIndex).trim()
+      };
+    }
+
+    // No example found, return all as prompt
     return {
-      prompt: text,
+      prompt: text.trim(),
       example: null
     };
   };
 
-  const { prompt: promptOnly, example: exampleSection } = parsePrompt();
-
-  const handleCopyPrompt = async () => {
+  const handleCopy = async () => {
     try {
-      await navigator.clipboard.writeText(promptOnly);
-      setCopiedPrompt(true);
-      setTimeout(() => setCopiedPrompt(false), 2000);
-    } catch (err) {
-      console.error('Failed to copy:', err);
-    }
-  };
-
-  const handleCopyAll = async () => {
-    try {
-      await navigator.clipboard.writeText(prompt.prompt_text);
-      setCopiedAll(true);
-      setTimeout(() => setCopiedAll(false), 2000);
+      // Only copy the prompt part, not the example
+      await navigator.clipboard.writeText(promptText);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch (err) {
       console.error('Failed to copy:', err);
     }
@@ -65,6 +90,17 @@ const PromptModal = ({ prompt, onClose }) => {
     }
   };
 
+  // // Separate prompt from example using ---EXAMPLE--- marker
+  // const separatePromptAndExample = (text) => {
+  //   if (!text) return { prompt: '', example: '' };
+    
+  //   const parts = text.split('---EXAMPLE---');
+  //   return {
+  //     prompt: parts[0].trim(),
+  //     example: parts.length > 1 ? parts[1].trim() : ''
+  //   };
+  // };
+
   // Parse hierarchical category
   const parseCategory = (category) => {
     if (category && category.includes(' > ')) {
@@ -75,6 +111,7 @@ const PromptModal = ({ prompt, onClose }) => {
   };
 
   const { main: mainCategory, sub: subCategory } = parseCategory(prompt.category);
+  const { prompt: promptText, example: exampleText } = separatePromptAndExample(prompt.prompt_text);
 
   if (!prompt) return null;
 
@@ -123,52 +160,38 @@ const PromptModal = ({ prompt, onClose }) => {
           <div className="mb-6">
             <div className="flex items-center justify-between mb-3">
               <h3 className="text-lg font-semibold text-gray-900">Prompt</h3>
-              <div className="flex gap-2">
-                <button
-                  onClick={handleCopyPrompt}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                    copiedPrompt
-                      ? 'bg-green-100 text-green-700' 
-                      : 'bg-primary-600 text-white hover:bg-primary-700'
-                  }`}
-                >
-                  {copiedPrompt ? '✓ Copied!' : '📋 Copy Prompt Only'}
-                </button>
-                {exampleSection && (
-                  <button
-                    onClick={handleCopyAll}
-                    className={`px-4 py-2 rounded-lg font-medium transition-all ${
-                      copiedAll
-                        ? 'bg-green-100 text-green-700' 
-                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                    }`}
-                  >
-                    {copiedAll ? '✓ Copied!' : 'Copy All'}
-                  </button>
-                )}
-              </div>
+              <button
+                onClick={handleCopy}
+                className={`px-4 py-2 rounded-lg font-medium transition-all ${
+                  copied 
+                    ? 'bg-green-100 text-green-700' 
+                    : 'bg-primary-100 text-primary-700 hover:bg-primary-200'
+                }`}
+              >
+                {copied ? '✓ Copied Prompt!' : '📋 Copy Prompt'}
+              </button>
             </div>
             <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
               <pre className="whitespace-pre-wrap font-mono text-sm text-gray-800 leading-relaxed">
-                {promptOnly}
+                {promptText}
               </pre>
             </div>
           </div>
 
-          {/* Example Output Section (if exists) */}
-          {exampleSection && (
+          {/* Example/Sample Output (if exists) */}
+          {exampleText && (
             <div className="mb-6">
-              <div className="flex items-center justify-between mb-3">
-                <h3 className="text-lg font-semibold text-gray-900">📘 Example Output</h3>
-                <span className="text-sm text-gray-500 bg-yellow-50 px-3 py-1 rounded-full border border-yellow-200">
-                  For reference only
-                </span>
+              <div className="flex items-center mb-3">
+                <h3 className="text-lg font-semibold text-gray-900">Example / Sample Output</h3>
               </div>
               <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
                 <pre className="whitespace-pre-wrap font-mono text-sm text-blue-900 leading-relaxed">
-                  {exampleSection}
+                  {exampleText}
                 </pre>
               </div>
+              <p className="mt-2 text-xs text-gray-500 italic">
+                💡 The copy button above copies only the prompt, not this example section
+              </p>
             </div>
           )}
 
