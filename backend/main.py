@@ -187,7 +187,7 @@ async def get_prompt(prompt_id: int):
 @app.get("/api/categories")
 async def get_categories():
     """Get all unique categories"""
-    query = sqlalchemy.select([prompts.c.category]).distinct()
+    query = sqlalchemy.select(prompts.c.category).distinct()
     results = await database.fetch_all(query)
     categories = [row["category"] for row in results]
     return {"categories": categories}
@@ -201,10 +201,10 @@ async def get_stats():
     
     # Count by category
     category_query = (
-        sqlalchemy.select([
+        sqlalchemy.select(
             prompts.c.category,
             sqlalchemy.func.count().label("count")
-        ])
+        )
         .group_by(prompts.c.category)
     )
     category_results = await database.fetch_all(category_query)
