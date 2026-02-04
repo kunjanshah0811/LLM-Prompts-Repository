@@ -12,7 +12,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database configuration
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://promptuser:promptpass@localhost:5432/promptdb")
+#DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://promptuser:promptpass@localhost:5432/promptdb")
+
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://llm_prompts_db_user:W0TGzcdGlz41K8qjToErNhG9A8Dy5P1Z@dpg-d61pbcvgi27c73esnov0-a/llm_prompts_db")
 
 database = databases.Database(DATABASE_URL)
 metadata = MetaData()
