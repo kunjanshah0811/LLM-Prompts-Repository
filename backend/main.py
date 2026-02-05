@@ -12,9 +12,9 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Database configuration
-#DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://promptuser:promptpass@localhost:5432/promptdb")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://promptuser:promptpass@localhost:5432/promptdb")
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://llm_prompts_db_user:W0TGzcdGlz41K8qjToErNhG9A8Dy5P1Z@dpg-d61pbcvgi27c73esnov0-a/llm_prompts_db")
+#DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://llm_prompts_db_user:W0TGzcdGlz41K8qjToErNhG9A8Dy5P1Z@dpg-d61pbcvgi27c73esnov0-a/llm_prompts_db")
 
 database = databases.Database(DATABASE_URL)
 metadata = MetaData()
@@ -191,7 +191,7 @@ async def get_categories():
     """Get all unique categories"""
     query = sqlalchemy.select(prompts.c.category).distinct()
     results = await database.fetch_all(query)
-    categories = [row["category"] for row in results]
+    categories = sorted([row["category"] for row in results])
     return {"categories": categories}
 
 @app.get("/api/stats", response_model=PromptStats)
@@ -210,7 +210,7 @@ async def get_stats():
         .group_by(prompts.c.category)
     )
     category_results = await database.fetch_all(category_query)
-    categories_dict = {row["category"]: row["count"] for row in category_results}
+    categories_dict = dict(sorted((row["category"], row["count"]) for row in category_results))
     
     return {
         "total_prompts": total,
