@@ -265,26 +265,6 @@ Or use the Swagger UI at `http://localhost:8000/docs`
    - Add a new prompt
    - Switch between grid/list view
 
-## 🎨 Customization
-
-### Change Colors
-
-Edit `frontend/tailwind.config.js`:
-```javascript
-theme: {
-  extend: {
-    colors: {
-      primary: {
-        // Your custom color palette
-        500: '#yourcolor',
-        600: '#yourcolor',
-        // etc.
-      }
-    }
-  }
-}
-```
-
 ### Add New Categories
 
 Edit the `predefinedCategories` array in `frontend/src/pages/AddPromptPage.jsx`
@@ -315,14 +295,6 @@ Edit the `example_prompts` array in `backend/main.py`
 - Full-text search capabilities
 - ACID compliant
 
-## 🔒 Security Notes
-
-- No authentication = all data is public
-- Input validation on both frontend and backend
-- SQL injection protection via SQLAlchemy
-- CORS properly configured
-- No sensitive data storage (it's anonymous!)
-
 ## 📈 Scaling Considerations
 
 For high traffic, consider:
@@ -333,80 +305,6 @@ For high traffic, consider:
 4. **Search**: Implement Elasticsearch for advanced search
 5. **Rate Limiting**: Add API rate limiting
 6. **Analytics**: Add Plausible or Google Analytics
-
-## 🐛 Troubleshooting
-
-### Backend won't start
-- Check PostgreSQL is running: `pg_isready`
-- Verify database exists: `psql -l | grep promptdb`
-- Check .env file has correct DATABASE_URL
-- Ensure all dependencies installed: `pip install -r requirements.txt`
-
-### Frontend won't start
-- Delete `node_modules` and reinstall: `rm -rf node_modules && npm install`
-- Check Node.js version: `node --version` (should be 16+)
-- Verify .env file exists with VITE_API_URL
-
-### CORS errors
-- Backend CORS is configured for `allow_origins=["*"]`
-- In production, update to specific domain
-- Check backend is running and accessible
-
-### Database connection errors
-- Verify PostgreSQL is running
-- Check DATABASE_URL format: `postgresql://user:password@host:port/database`
-- Ensure database exists and is accessible
-
-### API requests fail
-- Backend must be running on port 8000
-- Check browser console for errors
-- Use Network tab to see request/response
-- Test API directly with curl or Postman
-
-## 🤝 Contributing
-
-Contributions are welcome! Here's how:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature-name`
-3. Make your changes
-4. Test thoroughly
-5. Commit: `git commit -m 'Add feature'`
-6. Push: `git push origin feature-name`
-7. Create a Pull Request
-
-## 📝 License
-
-This project is open source and available under the MIT License.
-
-## 🙏 Acknowledgments
-
-- Example prompts from [Wolfram Prompt Repository](https://resources.wolframcloud.com/PromptRepository)
-- Built for social scientists by developers who care about research
-- Inspired by the need for shared, reusable prompts in academic research
-
-## 📧 Support
-
-For questions or issues:
-1. Check the documentation in each README
-2. Review the API docs at `/docs`
-3. Open an issue on GitHub
-4. Check troubleshooting section
-
-## 🗺️ Roadmap
-
-Future enhancements:
-- [ ] User accounts (optional)
-- [ ] Prompt ratings/favorites
-- [ ] Comments on prompts
-- [ ] Export prompts as JSON
-- [ ] Advanced search with Elasticsearch
-- [ ] Prompt versioning
-- [ ] Community voting
-- [ ] API rate limiting
-- [ ] Prompt collections/categories
-
----
 
 **Happy prompting! 🚀**
 
