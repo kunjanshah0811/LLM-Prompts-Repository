@@ -32,3 +32,7 @@ venv/
 *.db
 *.sqlite
 postgres_data/
+
+# .md files
+Quick_Reference.md
+Setup_Guide.md
