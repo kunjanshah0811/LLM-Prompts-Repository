@@ -6,7 +6,7 @@
 
 **Download and install Docker Desktop:**
 - **Windows/Mac**: https://www.docker.com/products/docker-desktop
-- **Linux**: `sudo apt install docker-compose`
+- **Linux**: `sudo apt install docker-compose-prod`
 
 ### 2. Project Structure
 
@@ -30,7 +30,7 @@ llm-prompt-library/
 
 ### 3. Copy These Files
 
-#### File 1: `docker-compose.yml` (root folder)
+#### File 1: `docker-compose-prod.yml` (root folder)
 
 ```yaml
 version: '3.8'
@@ -114,7 +114,7 @@ CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 cd llm-prompt-library
 
 # Start everything
-docker-compose up -d
+docker-compose-prod up -d
 ```
 
 **First run takes 2-5 minutes** (downloading images, installing dependencies)
@@ -132,25 +132,25 @@ Open your browser:
 
 ```bash
 # Start everything
-docker-compose up -d
+docker-compose-prod up -d
 
 # View logs (see what's happening)
-docker-compose logs -f
+docker-compose-prod logs -f
 
 # View logs for specific service
-docker-compose logs -f backend
-docker-compose logs -f frontend
+docker-compose-prod logs -f backend
+docker-compose-prod logs -f frontend
 
 # Stop everything
-docker-compose down
+docker-compose-prod down
 
 # Fresh start (delete database and restart)
-docker-compose down -v
+docker-compose-prod down -v
 docker-compose up -d
 
 # Rebuild after code changes
 docker-compose build
-docker-compose up -d
+docker-compose-prod up -d
 ```
 
 ---
@@ -159,7 +159,7 @@ docker-compose up -d
 
 Check all containers are running:
 ```bash
-docker-compose ps
+docker-compose-prod ps
 ```
 
 Expected output:
