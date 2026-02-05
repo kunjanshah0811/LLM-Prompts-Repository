@@ -34,5 +34,5 @@ venv/
 postgres_data/
 
 # .md files
-Quick_Reference.md
-Setup_Guide.md
+QUICK_REFERENCE.md
+SETUP_GUIDE.md
