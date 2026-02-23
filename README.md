@@ -1,11 +1,14 @@
 # 🧠 LLM Prompts Repository
 
+## Streamlit Prototype [(Click Here)](https://prototype-llm-prompts-repository.streamlit.app/)
+
 A full-stack web application for social scientists to share and discover LLM prompts for research purposes. Built with FastAPI (Python), React, and PostgreSQL.
 
 ![Tech Stack](https://img.shields.io/badge/FastAPI-009688?style=for-the-badge&logo=fastapi&logoColor=white)
 ![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Streamlit](https://img.shields.io/badge/-Streamlit-FF4B4B?style=flat&logo=streamlit&logoColor=white)
 
 ## ✨ Features
 
